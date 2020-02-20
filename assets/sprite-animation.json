@@ -1,0 +1,71 @@
+{
+    "PlayerExplosion":
+    {
+        "name": "player explosion",
+        "bullet": "bullet_1.png",
+        "framerate": 30,
+        "frames": [
+            "player_explosion.png",
+            "player_explosion_2.png"
+        ]
+    },
+    "AlienBullet1":
+    {
+        "name": "alien bullet 1",
+        "bullet": "bullet_1.png",
+        "framerate": 30,
+        "frames": [
+            "alien_bullet1.png",
+            "alien_bullet1_1.png"
+        ]
+    },
+    "AlienBullet3":
+    {
+        "name": "alien bullet 3",
+        "bullet": "bullet_3.png",
+        "framerate": 30,
+        "frames": [
+            "alien_bullet3_1.png",
+            "alien_bullet3_2.png"
+        ]
+    },
+    "Alien1":
+    {
+        "name": "alien 1",
+        "bullet": "bullet_1.png",
+        "framerate": 30,
+        "frames": [
+            "Alien1.png",
+            "Alien1_2.png"
+        ]
+    },
+    "Alien2":
+    {
+        "name": "alien 2",
+        "bullet": "bullet_2.png",
+        "framerate": 30,
+        "frames": [
+            "Alien2.png",
+            "Alien2_2.png"
+        ]
+    },
+    "Alien3":
+    {
+        "name": "alien 3",
+        "bullet": "bullet_3.png",
+        "framerate": 30,
+        "frames": [
+            "Alien3.png",
+            "Alien3_2.png"
+        ]
+    },
+    "Player":
+    {
+        "name": "player",
+        "bullet": "bullet_4.png",
+        "framerate": 0,
+        "frames": [
+            "Player.png"
+        ]
+    }
+}

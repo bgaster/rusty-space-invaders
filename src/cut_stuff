@@ -1,0 +1,192 @@
+ // let event_loop = EventLoop::new();
+    // let mut input = WinitInputHelper::new();
+    // let window = {
+    //     let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
+    //     WindowBuilder::new()
+    //         .with_title("Space Invaders")
+    //         .with_inner_size(size)
+    //         .with_min_inner_size(size)
+    //         .build(&event_loop)
+    //         .unwrap()
+    // };
+    // let mut hidpi_factor = window.scale_factor();
+    // let mut pixels = {
+    //     let surface = Surface::create(&window);
+    //     let surface_texture = SurfaceTexture::new(WIDTH, HEIGHT, surface);
+    //     Pixels::new(WIDTH, HEIGHT, surface_texture)?
+    // };
+
+    // load spritesheet
+    let sprite = SpriteSheet::new("/Users/br-gaster/dev/space-invaders/assets/sprite-sheet.png");
+    //println!("S = {} {}", sprite.width, sprite.height);
+
+    // load JSON files for animations
+    let sheet_json   = SheetJSON::new("/Users/br-gaster/dev/space-invaders/assets/sprite-sheet.json");
+    let anis_json   = AnimationJSON::from_json("/Users/br-gaster/dev/space-invaders/assets/sprite-animation.json");
+
+    // let mut world = World::new();
+
+    let mut switch = 0;
+
+    //let mut gamepad = None;
+
+let mut aliens = vec![];
+
+    // add single row of alien 1
+    let mut alien = AnimationJSON::create_annimation(80, 40, &"Alien1".to_string(), &anis_json, &sheet_json);
+    for _ in 0..11 {
+        aliens.push(alien.clone());
+        alien.transform(110,0);
+    }
+
+    // add 1st row of alien 2
+    let mut alien = AnimationJSON::create_annimation(80, 60, &"Alien2".to_string(), &anis_json, &sheet_json);
+    let mut alien2 = alien.clone(); 
+    for _ in 0..11 {
+        aliens.push(alien.clone());
+        alien.transform(110,0);
+    }
+
+    // add 2nd row of alien 2
+    alien2.transform(0,20);
+    for _ in 0..11 {
+        aliens.push(alien2.clone());
+        alien2.transform(110,0);
+    }
+
+    // add 1st row of alien 3
+    let mut alien = AnimationJSON::create_annimation(80, 100, &"Alien3".to_string(), &anis_json, &sheet_json);
+    let mut alien2 = alien.clone(); 
+    for _ in 0..11 {
+        aliens.push(alien.clone());
+        alien.transform(110,0);
+    }
+
+    // add 2nd row of alien 3
+    alien2.transform(0,20);
+    for _ in 0..11 {
+        aliens.push(alien2.clone());
+        alien2.transform(110,0);
+    }
+
+    let mut player = AnimationJSON::create_annimation(10, 200, &"Player".to_string(), &anis_json, &sheet_json);
+
+    let mut time = 0;
+
+    // discover any gamepads
+    let mut gilrs = Gilrs::new().unwrap();
+
+    // Iterate over all connected gamepads
+    for (_id, gamepad) in gilrs.gamepads() {
+        println!("{} is {:?}", gamepad.name(), gamepad.power_info());
+    }
+
+// let mut p = interface.pixels.get_frame();
+            // let mut frame = Frame {
+            //     frame: p,
+            //     width: Interface::get_width(),
+            //     height: Interface::get_height(),
+            // };
+
+            // player.render(&sprite, &mut frame);
+            // for a in &mut aliens {
+            //     a.render(&sprite, &mut frame);
+            // }
+
+//player.transform(movement, 0);
+
+    //     if let Event::RedrawRequested(_) = event {
+    //         world.draw(renderer.pixels.get_frame());
+
+    
+    //     }
+
+    //     // Handle any gamepad input events
+    //     while let Some(gilrs::Event { id, event, .. }) = gilrs.next_event() {
+    //         let pad = gilrs.gamepad(id);
+    //         if gamepad.is_none() {
+    //             gamepad = Some(id);
+    //         } else if event == gilrs::ev::EventType::Disconnected {
+    //             gamepad = None;
+    //         }
+    //     }
+
+    //     // Handle input events
+    //     if renderer.input.update(event) {
+    //         // Close events
+    //         if renderer.input.key_pressed(VirtualKeyCode::Escape) || renderer.input.quit() {
+    //             *control_flow = ControlFlow::Exit;
+    //             return;
+    //         }
+
+    //         if let Some(id) = gamepad {
+    //             let gamepad = gilrs.gamepad(id);
+
+    //             // left = left || gamepad.is_pressed(Button::DPadLeft);
+    //             // right = right || gamepad.is_pressed(Button::DPadRight);
+    //             // fire = fire
+    //             //     || gamepad.button_data(Button::South).map_or(false, |button| {
+    //             //         button.is_pressed() && button.counter() == gilrs.counter()
+    //             //     });
+    //         }
+
+    //         let controls = {
+    //             // Keyboard controls
+    //             let mut left = renderer.input.key_held(VirtualKeyCode::Left);
+    //             let mut right = renderer.input.key_held(VirtualKeyCode::Right);
+    //             let mut fire = renderer.input.key_pressed(VirtualKeyCode::Space);
+
+    //             let direction = if left {
+    //                 Direction::Left
+    //             } else if right {
+    //                 Direction::Right
+    //             } else {
+    //                 Direction::Still
+    //             };
+
+    //             Controls { direction, fire }
+    //         };
+
+    //         // Adjust high DPI factor
+    //         if let Some(factor) = renderer.input.scale_factor_changed() {
+    //             renderer.hidpi_factor = factor;
+    //         }
+
+    //         // Resize the window
+    //         if let Some(size) = renderer.input.window_resized() {
+    //             //let size = size.to_physical(hidpi_factor);
+    //             let width = size.width; // .round() as u32;
+    //             let height = size.height; //.round() as u32;
+
+    //             renderer.pixels.resize(width, height);
+    //         }
+
+    //         // Update internal state and request a redraw
+    //         world.update();
+    //         if time == 24 {
+    //             time = 0;
+    //         }
+    //         else {
+    //             time = time + 1;
+    //         }
+
+    //         for a in &mut aliens {
+    //             //println!("{}=", time);
+    //             if time == 24 {
+    //                 a.transform(8, 0);
+    //             }
+
+    //             a.step();
+    //         }
+
+    //         let movement = match controls.direction {
+    //             Direction::Left => -2,
+    //             Direction::Right => 2,
+    //             Direction::Still => 0
+    //         };
+            
+    //         player.transform(movement, 0);
+
+    //         renderer.window.request_redraw();
+    //     }
+    // });

@@ -1,0 +1,24 @@
+[package]
+name = "space-invaders"
+version = "0.1.0"
+authors = ["Benedict Gaster <benedict.gaster@uwe.ac.uk>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pixels = "0.0.2"
+winit = "0.20.0"
+winit_input_helper = "0.4.0"
+gilrs = "0.7.3"
+serde_json = "1.0.46"
+serde = "1.0.104"
+serde_derive = "1.0.104"
+image = "0.22.4"
+env_logger = "0.7"
+log = "0.4"
+euclid = "0.20.7"
+line_drawing = "0.8.0"
+lazy_static = "1.4.0"
+either = "1.5.3"
+rand = "0.7.3"
