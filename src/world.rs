@@ -1,5 +1,7 @@
 //! Description: 
 //! 
+//! The world... probably not the best design, as it has grown larger than I 
+//! might have liked :-)
 //! 
 //! Copyright © 2020 Benedict Gaster. All rights reserved.
 
@@ -13,12 +15,17 @@ use crate::animation::*;
 use crate::math::*;
 use crate::interface::*;
 use crate::timer::*;
+use crate::text::*;
+use crate::sound::*;
 
 //------------------------------------------------------------------------------
 
 type Time = Duration;
 
 //------------------------------------------------------------------------------
+// Constants used throughout the game, generally only accessable via world
+//------------------------------------------------------------------------------
+
 
 const NUMBER_ALIEN_COLUMNS: usize = 11;
 const NUMBER_ALIEN_ROWS: usize = 5;
@@ -32,7 +39,6 @@ const BULLET_EXPLOSION_TIME: u64 = 24;
 const PLAYER_DIED_DURATION: Time = Duration::from_millis(1000);
 
 const ALIEN_INITIAL_SPEED: i32 = 2;
-//const ALIEN_SWARM_INITIAL_SPEED: Time = 24;
 const ALIEN_SWARM_INITIAL_SPEED: Time = Duration::from_millis(120);
 const ALIEN_BULLET_START_DURATION: Time = Duration::from_millis(1000);
 const ALIEN_BULLET_LESS_EIGHT_DURATION: Time = Duration::from_millis(70);
@@ -47,31 +53,55 @@ const ALIEN_SPACING_HORZ: u32 = 130;
 const ALIEN_BULLET_INITIAL_SPEED: u32 = 6;
 
 const PLAYER_TOP_LEFT_X_START_POSITION: u32 = 220;
-const PLAYER_TOP_LEFT_Y_START_POSITION: u32 = 320;
+const PLAYER_TOP_LEFT_Y_START_POSITION: u32 = 360;
+
+const BARRIER_TOP_LEFT_X_START_POSITION: u32 = 270;
+const BARRIER_TOP_LEFT_Y_START_POSITION: u32  = 310;
+const BARRIER_SPACING_HORZ: u32 = 340;
 
 const BOUNDING_BOX_TOP_LEFT_X: u32 = 10;
 const BOUNDING_BOX_TOP_LEFT_Y: u32 = 10;
 const BOUNDING_BOX_PADDING: i32 = 10;
 
-const ALIEN_ENTITY_START: EntityIndex = 6;
-
 pub const PLAYER_LIVES_TOP_LEFT_X_START_POSITION: u32 = 240;
-pub const PLAYER_LIVES_TOP_LEFT_Y_START_POSITION: u32 = 370;
+pub const PLAYER_LIVES_TOP_LEFT_Y_START_POSITION: u32 = 410;
 
 lazy_static! {
-    static ref SCREEN_LINE: Rect = Rect::new(Point::new(0,362), Size::new(Interface::get_width(), 2));
+    static ref SCREEN_LINE: Rect = Rect::new(Point::new(0,400), Size::new(Interface::get_width(), 2));
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum GameState {
+    Playing,
+    Paused,
+    Splash,
+    GameOver,
 }
 
 //#[derive(Debug)]
 pub struct World {
+
+    current_state: GameState,
+
     // resources
     
     /// random number generator
     rng: Box<dyn RngCore>,
 
+    /// sounds
+    sound: Sound,
+
     /// sprite sheet for all sprites in game
     sprite_sheet: SpriteSheet,
     
+    splash: Sprite,
+
+    /// text stuff
+    digits: Digits,
+
+    /// score text stuff
+    score_text: Score,
+
     /// explosion when player bullet hits top of internal screen 
     player_bullet_explosion: Sprite,
 
@@ -120,6 +150,7 @@ pub struct World {
 
     entities: Vec<Option<Entity>>,
     player: EntityIndex,
+    barriers: Vec<EntityIndex>,
     aliens: Vec<EntityIndex>,
     alien_bullet1: EntityIndex,
     alien_bullet2: EntityIndex,
@@ -131,7 +162,11 @@ pub struct World {
 impl World {
     pub fn new(
         internal_rect: Rect,
+        sound: Sound,
         sprite_sheet: SpriteSheet, 
+        splash: Sprite,
+        digits: Digits,
+        score_text: Score,
         player_bullet_explosion: Sprite,
         player_explosion: Animation,
         alien_bullet_explosion: Sprite,
@@ -140,6 +175,7 @@ impl World {
         alien_swarm_direction: i32,
         alien_swarm_top_left_position: Point,
         player: Entity, 
+        barriers_ens: Vec<Entity>,
         alien_bullet1: Entity,
         alien_bullet2: Entity,
         alien_bullet3: Entity,
@@ -157,16 +193,27 @@ impl World {
         let alien_bullet2 = 4;
         let alien_bullet3 = 5;
 
+        let mut barriers = vec![];
+        for b in barriers_ens.iter() {
+            entities.push(Some((*b).clone()));
+            barriers.push(entities.len()-1);
+        }
+
         let mut aliens = vec![];
-        for (i, a) in alien_ens.iter().enumerate() {
+        for a in alien_ens.iter() {
             entities.push(Some((*a).clone()));
-            aliens.push(i+ALIEN_ENTITY_START);
+            aliens.push(entities.len()-1);
         }
 
         World {
+            current_state: GameState::Splash,
             rng: Box::new(rand::thread_rng()),
             internal_rect,
+            sound,
             sprite_sheet,
+            splash,
+            digits,
+            score_text,
             player_bullet_explosion,
             player_explosion,
             player_died_timer: Timer::new(PLAYER_DIED_DURATION),
@@ -188,6 +235,7 @@ impl World {
             alien_columns: [NUMBER_ALIEN_ROWS as i32; NUMBER_ALIEN_COLUMNS],
             entities,
             player,
+            barriers,
             aliens,
             alien_bullet1,
             alien_bullet2,
@@ -197,22 +245,70 @@ impl World {
         }
     }
 
+    #[inline]
+    pub fn play_music(&self, bpm: usize) {
+        self.sound.play_music(bpm);
+    }
+
+    #[inline]
+    pub fn play_alien_explosion(&self) {
+        self.sound.play_alien_explosion();
+    }
+
+    #[inline]
+    pub fn play_player_explosion(&self) {
+        self.sound.play_player_explosion();
+    }
+
+    #[inline]
+    pub fn play_player_shot(&self) {
+        self.sound.play_player_shot();
+    }
+
+    /// return the current playing state the game is in
+    #[inline]
+    pub fn get_current_state(&self) -> GameState {
+        self.current_state
+    }
+
+    /// set the current playing state
+    #[inline]
+    pub fn set_current_state(&mut self, state: GameState) {
+        self.current_state = state;
+    }
+
+    /// digits for drawing numbers
+    #[inline]
+    pub fn get_digits(&self) -> &Digits {
+        &self.digits
+    }
+
+    /// score text for drawing
+    #[inline]
+    pub fn get_score_text(&self) -> &Score {
+        &self.score_text
+    }
+
     /// initial speed of alien bullets
+    #[inline]
     pub fn get_alien_bullet_initial_speed() -> u32 {
         ALIEN_BULLET_INITIAL_SPEED
     }
 
     /// generate a random column index [0,NUMBER_ALIEN_COLUMNS]
+    #[inline]
     pub fn gen_rand_column(&mut self) -> usize {
         self.rng.next_u64() as usize % NUMBER_ALIEN_COLUMNS
     }
 
     /// returns is the player is in process of dying boolean
+    #[inline]
     pub fn get_player_died(&self) -> bool {
         self.player_died
     }
 
     /// returns mutable ref for is the player is in process of dying
+    #[inline]
     pub fn get_mut_player_died(&mut self) -> &mut bool {
         &mut self.player_died
     }
@@ -223,7 +319,7 @@ impl World {
     }
 
     #[inline]
-    pub fn reset_player_died__timer(&mut self) {
+    pub fn reset_player_died_timer(&mut self) {
         self.player_died_timer.reset()
     }
 
@@ -303,6 +399,11 @@ impl World {
             }
         }
         None
+    }
+
+    #[inline]
+    pub fn get_splash_screen_sprite(&self) -> Sprite {
+        self.splash.clone()
     }
 
     #[inline]
@@ -408,20 +509,6 @@ impl World {
     pub fn get_mut_alien_speed(&mut self) -> &mut i32 {
         &mut self.alien_speed
     }
-
-    /// return global time
-    // TODO: use real time
-    // #[inline]
-    // pub fn get_time(&self) -> Time {
-    //     self.time
-    // }
-
-    /// increment global
-    // TODO: use real time
-    //#[inline]
-    // fn inc_time(&mut self) {
-    //     self.time += 1;
-    // }
     
     /// returns the number of aliens that have been killed
     #[inline]
@@ -519,6 +606,21 @@ impl World {
             }
         }
         None
+    }
+
+    #[inline]
+    pub fn get_barriers<'a>(&'a self) -> impl Iterator<Item = EntityIndex> + 'a {
+        self.barriers.iter().cloned()
+    }
+
+    #[inline]
+    pub fn get_number_barriers(&self) -> usize {
+        self.barriers.len()
+    }
+
+    #[inline]
+    pub fn get_barrier(&self, index: usize) -> EntityIndex {
+        self.barriers[index]
     }
 
     #[inline]
@@ -734,6 +836,53 @@ pub fn initial_world_state() -> World {
         explosion_sprite.frame.w as u32, 
         explosion_sprite.frame.h as u32);
 
+    // barriers
+    let s = sheet_json.frames.get("barrier.png").unwrap();
+    let barrier_sprite = Sprite::new(s.frame.x as u32, s.frame.y as u32, s.frame.w as u32, s.frame.h as u32);
+    let barrier_mask   = barrier_sprite.create_mask(&sprite_sheet);
+
+    let barriers = vec![
+        Entity::Barrier(Barrier::new(
+            Point::new(BARRIER_TOP_LEFT_X_START_POSITION,BARRIER_TOP_LEFT_Y_START_POSITION), 
+            barrier_sprite.clone(), 
+            barrier_mask.clone(), 
+            Rect::new(
+                Point::new(BARRIER_TOP_LEFT_X_START_POSITION,BARRIER_TOP_LEFT_Y_START_POSITION), 
+                Size::new(s.frame.w as u32, s.frame.h as u32)))),
+        Entity::Barrier(Barrier::new(
+            Point::new(
+                BARRIER_TOP_LEFT_X_START_POSITION + bounding_box.size.width + BARRIER_SPACING_HORZ,
+                BARRIER_TOP_LEFT_Y_START_POSITION), 
+            barrier_sprite.clone(), 
+            barrier_mask.clone(),
+            Rect::new(
+                Point::new(
+                    BARRIER_TOP_LEFT_X_START_POSITION + bounding_box.size.width + BARRIER_SPACING_HORZ,
+                    BARRIER_TOP_LEFT_Y_START_POSITION), 
+                Size::new(s.frame.w as u32, s.frame.h as u32)))),
+        Entity::Barrier(Barrier::new(
+            Point::new(
+                BARRIER_TOP_LEFT_X_START_POSITION + (bounding_box.size.width + BARRIER_SPACING_HORZ)*2,
+                BARRIER_TOP_LEFT_Y_START_POSITION), 
+            barrier_sprite.clone(), 
+            barrier_mask.clone(),
+            Rect::new(
+                Point::new(
+                    BARRIER_TOP_LEFT_X_START_POSITION + (bounding_box.size.width + BARRIER_SPACING_HORZ)*2,
+                    BARRIER_TOP_LEFT_Y_START_POSITION), 
+                Size::new(s.frame.w as u32, s.frame.h as u32)))),
+        Entity::Barrier(Barrier::new(
+            Point::new(
+                BARRIER_TOP_LEFT_X_START_POSITION + (bounding_box.size.width + BARRIER_SPACING_HORZ)*3,
+                BARRIER_TOP_LEFT_Y_START_POSITION), 
+            barrier_sprite, 
+            barrier_mask,
+            Rect::new(
+                Point::new(
+                    BARRIER_TOP_LEFT_X_START_POSITION + (bounding_box.size.width + BARRIER_SPACING_HORZ)*3,
+                    BARRIER_TOP_LEFT_Y_START_POSITION), 
+                Size::new(s.frame.w as u32, s.frame.h as u32))))];
+
     let explosion_sprite = sheet_json.frames.get("alien_bullet_explosiion_with_player_bullet.png").unwrap();
     let alien_bullet_explosiion_with_player_bullet_sprite = Sprite::new(
         explosion_sprite.frame.x as u32, 
@@ -742,13 +891,6 @@ pub fn initial_world_state() -> World {
         explosion_sprite.frame.h as u32);
 
     let player_explosion_sprite = Animation::new(anis_json.get(&"PlayerExplosion".to_string()).unwrap(), &sheet_json);
-    // let explosion_sprite = sheet_json.frames.get("player_explosion.png").unwrap();
-    // //let explosion_sprite = sheet_json.frames.get("block.png").unwrap();
-    // let player_explosion_sprite = Sprite::new(
-    //     explosion_sprite.frame.x as u32, 
-    //     explosion_sprite.frame.y as u32,
-    //     explosion_sprite.frame.w as u32, 
-    //     explosion_sprite.frame.h as u32);
 
     let explosion_sprite = sheet_json.frames.get("alien_bullet_explosiion.png").unwrap();
     let alien_bullet_explosion_sprite = Sprite::new(
@@ -770,9 +912,35 @@ pub fn initial_world_state() -> World {
     let ship_sprite = Sprite::new(s.frame.x as u32, s.frame.y as u32, s.frame.w as u32, s.frame.h as u32);
     let ship = Entity::Ship(Ship::new(Point::new(10, 200), ship_sprite));
 
+    let s = sheet_json.frames.get("splash.png").unwrap();
+    let splash_sprite = Sprite::new(s.frame.x as u32, s.frame.y as u32, s.frame.w as u32, s.frame.h as u32);
+
+    // load sounds
+    let sound = Sound::new(
+        "/Users/br-gaster/dev/space-invaders/assets/sounds/player_shoot_16bit.wav",
+        "/Users/br-gaster/dev/space-invaders/assets/sounds/player_explosion_16bit.wav",
+        "/Users/br-gaster/dev/space-invaders/assets/sounds/alien_explosion_16bit.wav",
+        vec!["/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_80bpm.wav",
+            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_100bpm.wav",
+            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_120bpm.wav",
+            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_140bpm.wav",
+            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_160bpm.wav",
+            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_180bpm.wav",
+            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_200bpm.wav"]);
+
+    // load text
+    let digits = Digits::new(&sheet_json);
+
+    // load text
+    let score_text = Score::new(&sheet_json);
+
     World::new(
         bounds, 
+        sound,
         sprite_sheet,
+        splash_sprite,
+        digits,
+        score_text,
         player_bullet_explosion_sprite,
         player_explosion_sprite,
         alien_bullet_explosion_sprite,
@@ -781,6 +949,7 @@ pub fn initial_world_state() -> World {
         alien_swarm_direction, 
         alien_swarm_position, 
         player,  
+        barriers,
         alien_bullet1,
         alien_bullet2,
         alien_bullet3,

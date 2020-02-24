@@ -14,7 +14,7 @@ use pixels::{wgpu::Surface, Error, Pixels, SurfaceTexture};
 use crate::controls::*;
 
 const WIDTH: u32 = 480;
-const HEIGHT: u32 = 400;
+const HEIGHT: u32 = 460;
 
 pub struct Interface {
     pub window: Window,

@@ -309,6 +309,51 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">barrier.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>11,8,22,16</rect>
+                <key>scale9Paddings</key>
+                <rect>11,8,22,16</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">credit.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>23,4,45,7</rect>
+                <key>scale9Paddings</key>
+                <rect>23,4,45,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">hi_score.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>31,4,61,7</rect>
+                <key>scale9Paddings</key>
+                <rect>31,4,61,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">player_bullet.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -340,6 +385,37 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">score.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>19,4,37,7</rect>
+                <key>scale9Paddings</key>
+                <rect>19,4,37,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">score_1.png</key>
+            <key type="filename">score_2.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>9,4,18,7</rect>
+                <key>scale9Paddings</key>
+                <rect>9,4,18,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">ship.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -352,6 +428,21 @@
                 <rect>12,5,24,11</rect>
                 <key>scale9Paddings</key>
                 <rect>12,5,24,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">splash.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>120,115,240,230</rect>
+                <key>scale9Paddings</key>
+                <rect>120,115,240,230</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -412,6 +503,13 @@
             <filename>text_9.png</filename>
             <filename>text_2.png</filename>
             <filename>text_6.png</filename>
+            <filename>score.png</filename>
+            <filename>score_1.png</filename>
+            <filename>score_2.png</filename>
+            <filename>hi_score.png</filename>
+            <filename>credit.png</filename>
+            <filename>barrier.png</filename>
+            <filename>splash.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

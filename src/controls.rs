@@ -1,3 +1,9 @@
+//! Description: 
+//! 
+//! Handle general control systems for player, aliens, bullets, and, of course, the ship
+//! 
+//! Copyright © 2020 Benedict Gaster. All rights reserved.
+//! 
 
 use either::*;
 
@@ -43,13 +49,13 @@ impl Default for Direction {
 // player control system, control movement of player and firing
 pub fn player_control_system(world: &mut World, controls: Option<Controls>) {
 
-    // is the player in the process of dying (we assume that they still have a lifes, checked elsewhere)
+    // is the player in the process of dying (we assume that they still have lives, checked elsewhere)
     if world.get_player_died() {
-        // if timer has expired next player life is respawn an game continues
+        // if timer has expired next player life is respawned and game continues
         if world.has_player_died_timer_expired() {
             *world.get_mut_player_died() = false;
         }
-        // otherwise no control updates happen
+        // otherwise no control updates happen for player
         else {
             return;
         }
@@ -68,6 +74,7 @@ pub fn player_control_system(world: &mut World, controls: Option<Controls>) {
         let bullet_speed = world.get_player_bullet_speed();
         let mut bullet_explosion = None;
 
+        let mut fire_sound = false;
         if let Some(entity) = world.get_mut_entity(world.get_player()) {
             if let Entity::Player(player) = entity {
 
@@ -80,6 +87,8 @@ pub fn player_control_system(world: &mut World, controls: Option<Controls>) {
                         player.bullet.position = Point::new(
                             player.position.x + player.bounding_box.width()/2 + 30,
                             ((player.position.y as i32) - player.bullet.bounding_box.height() as i32) as u32);
+                        
+                        fire_sound = true;
                     }
                 }
                 // animate player bullet if play 
@@ -107,6 +116,11 @@ pub fn player_control_system(world: &mut World, controls: Option<Controls>) {
                         position, 
                         bullet_explosion_sprite, 
                         world.get_bullet_explosion_time() as i32)));
+        }
+
+        // finally if we need to play the player fire sound, then do
+        if fire_sound {
+            world.play_player_shot();
         }
     }
 }
@@ -349,4 +363,16 @@ pub fn ship_control_system(world: &World) {
     if world.get_player_died() {
         return;
     }
+}
+
+
+/// is it game over, i.e. player has no lives left?
+pub fn is_game_over(world: &World) -> bool {
+    if let Some(entity) = world.get_entity(world.get_player()) {
+        if let Entity::Player(player) = entity {
+            return player.lives_remaining == 0;
+        }
+    }
+
+    return false;
 }

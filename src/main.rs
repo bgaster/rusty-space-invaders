@@ -83,6 +83,8 @@ mod collision;
 use crate::collision::*;
 
 mod timer;
+mod text;
+mod sound;
 
 const BOX_SIZE: i16 = 64;
 
@@ -96,35 +98,56 @@ fn main() -> Result<(), Error> {
 
     world.reset_lag();
     event_loop.run(move |event, _, control_flow| {
+        let current_state = world.get_current_state();
+
         if interface.render(&event) {
-            renderer_system(&world, &mut interface);
+            // render game if playing or paused
+            if  current_state == GameState::Playing || current_state == GameState::Paused {
+                renderer_system(&world, &mut interface);
+            }
+            // should we display the gameover screen
+            else if current_state == GameState::GameOver {
+
+            }
+            // or otherwise might be the splash screen
+            else if current_state == GameState::Splash {
+                renderer_splash(&world, &mut interface);
+            }
         }
-        // TODO: audio system
 
         let (should_exit, controls) = interface.handle_input(event);        
 
         // check if we should quit and exit if requested
-        if should_exit {
+        if should_exit || is_game_over(&world) {
             *control_flow = ControlFlow::Exit;
             return;
         }
-
         
+        if  current_state == GameState::Playing {
+            world.play_music(0);
+            // handle updates for player, alien, and ship components
+            player_control_system(&mut world, controls);
+            bullet_control_system(&mut world);
 
-        // handle updates for player, alien, and ship components
-        player_control_system(&mut world, controls);
-        bullet_control_system(&mut world);
+            alien_control_system(&mut world);
+            ship_control_system(&world);
 
-        alien_control_system(&mut world);
-        ship_control_system(&world);
+            // handle bullet collisons, possible end game state reached on return...
+            bullet_collision_system(&mut world);
 
-        // handle bullet collisons
-        bullet_collision_system(&mut world);
+            audio_system(&world);
 
-        audio_system(&world);
-
-        // finally update the world to handle any internal changes
-        world.update();
+            // finally update the world to handle any internal changes
+            world.update();
+        }
+        else if current_state == GameState::Splash {
+            if let Some(control) = controls {
+                // start game
+                if control.fire {
+                    world.set_current_state(GameState::Playing);
+                }
+            }
+        }
 
         interface.request_redraw();
     });

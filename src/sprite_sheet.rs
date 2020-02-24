@@ -97,6 +97,8 @@ pub struct Sprite {
     pub height: u32,
 }
 
+pub type SpriteMask = Vec<Vec<u8>>;
+
 impl Sprite {
     /// create sprite
     pub fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
@@ -105,6 +107,57 @@ impl Sprite {
             y,
             width,
             height,
+        }
+    }
+
+    /// create a mask of the sprite
+    pub fn create_mask(&self, sheet: &SpriteSheet) -> SpriteMask {
+        let mut mask = vec![];
+
+        for sy in 0..=self.height {
+            let mut row = vec![];
+            for sx in 0..=self.width {
+                let Rgba(rgba) = sheet.texture.get_pixel(sx+self.x,sy+self.y);
+                if rgba[3] != 0 { 
+                    // push 1 if alpha channel not 0
+                    row.push(1);
+                }
+                else {
+                    // push 0 is alpha channel 0
+                    row.push(0);
+                }
+            }
+            mask.push(row);
+        }
+
+        mask
+    }
+
+    /// render sprite to frame with mask
+    pub fn render_with_mask<'a>(&self, x: u32, y: u32, mask: &SpriteMask, sheet: &SpriteSheet, frame: &mut Frame<'a>) {
+        let mut px = x;
+        let mut py = y;
+
+        for sy in 0..=self.height {
+            for sx in 0..=self.width {
+                let Rgba(rgba) = sheet.texture.get_pixel(sx+self.x,sy+self.y);
+                
+                // check mask not 0 
+                // NOTE: no need to check alpha channel, as mask would be zero in that case
+                if mask[sy as usize][sx as usize] != 0 { 
+                    // clip if necessary
+                    if  px < frame.width*4 && py < frame.height*4 {
+                        frame.frame[(px+py*frame.width*4) as usize]   = rgba[0];
+                        frame.frame[(px+1+py*frame.width*4) as usize] = rgba[1];
+                        frame.frame[(px+2+py*frame.width*4) as usize] = rgba[2];
+                        frame.frame[(px+3+py*frame.width*4) as usize] = rgba[3];
+                    } 
+                    //}
+                }
+                px += 4;
+            }
+            py += 1;
+            px = x;
         }
     }
 

@@ -1,3 +1,9 @@
+//! Description: 
+//! 
+//! Handle all things drawing
+//! 
+//! Copyright © 2020 Benedict Gaster. All rights reserved.
+//! 
 
 use std::cmp::min;
 use either::*;
@@ -9,11 +15,33 @@ use crate::interface::*;
 use crate::entity::*;
 use crate::world::*;
 use crate::math::*;
+use crate::text::*;
 
-lazy_static! {
-    static ref SCREEN_LINE: Rect = Rect::new(Point::new(0,362), Size::new(Interface::get_width(), 2));
+/// draw the splash screen
+pub fn renderer_splash(world: &World, interface: &mut Interface) {
+    // we don't really need this as it is a full screen splash, but anyway
+    interface.clear_framebuffer([0x00,0x00,0x00,0xFF]);
+        
+    let p = interface.pixels.get_frame();
+    let mut frame = Frame {
+        frame: p,
+        width: Interface::get_width(),
+        height: Interface::get_height(),
+    };
+
+    let sheet = world.get_sprite_sheet();
+
+    // draw the splash sprite to the framebuffer
+    world.get_splash_screen_sprite().render(0, 0, sheet, &mut frame);
+
+    interface.draw_call();
 }
 
+/// draw the gameover screen
+pub fn renderer_gameover(world: &World, interface: &mut Interface) {
+}
+
+/// render the game frame
 pub fn renderer_system(world: &World, interface: &mut Interface) {
 
     interface.clear_framebuffer([0x0,0x0,0x0,0xFF]);
@@ -35,18 +63,59 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
                 player.sprite.render(player.position.x, player.position.y, sheet, &mut frame);
             }
 
-            // draw play bullet if in flight
+            // draw player bullet if in flight
             if player.bullet.bullet_mode == BulletMode::InFlight {
                 if let Left(sprite) = player.bullet.sprite.clone() {
                     sprite.render(player.bullet.position.x, player.bullet.position.y, sheet, &mut frame);
                 }
             }
 
+            // draw scores
+            world.get_digits().render_num(player.score as u32, Point::new(250,30), sheet, &mut frame); 
+            world.get_score_text().render_player1(Point::new(150,5), sheet, &mut frame);
+            world.get_score_text().render_hi_score(Point::new(700,5), sheet, &mut frame);
+            // TODO: add support hi-scores...
+            world.get_digits().render_num(0, Point::new(840,30), sheet, &mut frame); 
+            world.get_score_text().render_player2(Point::new(1300,5), sheet, &mut frame);
+        
+            // draw credits
+            world.get_score_text().render_credit(
+                Point::new(1100,PLAYER_LIVES_TOP_LEFT_Y_START_POSITION), 
+                sheet, 
+                &mut frame);
+            // no real credits needed to play, so we simply draw 00
+            world.get_digits().render_string(
+                "00".to_string(), 
+                Point::new(1500,PLAYER_LIVES_TOP_LEFT_Y_START_POSITION),
+                sheet, 
+                &mut frame); 
+
             // draw any lives left
+            world.get_digits().render(
+                player.lives_remaining as u32, 
+                Point::new(
+                    PLAYER_LIVES_TOP_LEFT_X_START_POSITION - 60,
+                    PLAYER_LIVES_TOP_LEFT_Y_START_POSITION + 2), 
+                sheet, 
+                &mut frame);
             for i in  0..player.lives_remaining as u32-1 {
                 player.sprite.render(
                     PLAYER_LIVES_TOP_LEFT_X_START_POSITION + (player.sprite.width + 100)*i, 
-                    PLAYER_LIVES_TOP_LEFT_Y_START_POSITION, 
+                    PLAYER_LIVES_TOP_LEFT_Y_START_POSITION,  
+                    sheet, 
+                    &mut frame);
+            }
+        }
+    }
+
+    // draw barriers
+    for index in world.get_barriers() {
+        if let Some(entity) = world.get_entity(index) {
+            if let Entity::Barrier(barrier) = entity {
+                barrier.sprite.render_with_mask(
+                    barrier.position.x, 
+                    barrier.position.y, 
+                    &barrier.mask,
                     sheet, 
                     &mut frame);
             }
@@ -96,7 +165,6 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
                         animation.render(explosion.position, sheet, &mut frame);
                     },
                 }
-                //explosion.sprite.render(explosion.position.x, explosion.position.y, sheet, &mut frame);
             }
         }
     }
@@ -107,7 +175,7 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
     //fill_rect(Point::new(0, 360), Point::new(Interface::get_width(), 362), [0x28, 0xcf, 0x28, 0xFF], frame.frame );
 
     fill_rect(
-        *SCREEN_LINE, 
+        World::get_ground(), 
         [0x28, 0xcf, 0x28, 0xFF], 
         frame.frame );
 
