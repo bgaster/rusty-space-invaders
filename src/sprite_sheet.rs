@@ -99,6 +99,15 @@ pub struct Sprite {
 
 pub type SpriteMask = Vec<Vec<u8>>;
 
+pub fn print_sprite_mask(mask: &SpriteMask) {
+    for row in mask {
+        for col in row {
+            print!("{}", col);
+        }  
+        println!("");
+    }
+}
+
 impl Sprite {
     /// create sprite
     pub fn new(x: u32, y: u32, width: u32, height: u32) -> Self {
@@ -113,22 +122,27 @@ impl Sprite {
     /// create a mask of the sprite
     pub fn create_mask(&self, sheet: &SpriteSheet) -> SpriteMask {
         let mut mask = vec![];
-
         for sy in 0..=self.height {
             let mut row = vec![];
             for sx in 0..=self.width {
                 let Rgba(rgba) = sheet.texture.get_pixel(sx+self.x,sy+self.y);
                 if rgba[3] != 0 { 
                     // push 1 if alpha channel not 0
+                    //print!("1");
                     row.push(1);
                 }
                 else {
+                    // print!("0");
                     // push 0 is alpha channel 0
                     row.push(0);
                 }
             }
             mask.push(row);
+            // println!("");
         }
+
+        // println!("-----------");
+        // print_sprite_mask(&mask);
 
         mask
     }

@@ -68,7 +68,6 @@ mod renderer;
 use crate::renderer::*;
 
 mod entity;
-use crate::entity::*;
 
 mod world;
 use crate::world::*;
@@ -86,14 +85,16 @@ mod timer;
 mod text;
 mod sound;
 
-const BOX_SIZE: i16 = 64;
-
+/// Entry point for space invaders
+/// 
+/// Creates the hardware interface, populates the game world, and then enters the game loop
 fn main() -> Result<(), Error> {
     env_logger::init();
 
     // create the hardware interface ... wgpu/pixels on desktop and 32bit for STM hardware (TODO)
     let (event_loop, mut interface) = create_interface("Space Invaders");
     
+    // create the initial state of the game world
     let mut world = initial_world_state();
 
     world.reset_lag();
@@ -141,6 +142,7 @@ fn main() -> Result<(), Error> {
             world.update();
         }
         else if current_state == GameState::Splash {
+            // showing spash screen and fire (space) is pressed
             if let Some(control) = controls {
                 // start game
                 if control.fire {

@@ -4,6 +4,7 @@ An emulation of the original space invaders. The behaviour somewhat follows that
 
 ![screen shot](./assets/screen_shot_game_play.png)
 
+Another useful place for details of how the game works can be found [here](https://www.classicgaming.cc/classics/space-invaders/play-guide).
          
 It is by no means a direct reproduction, in particular, the timing is similar, but I've not made any real effort to match it percisely. It is not implemented as per the original game, using the 2 screen interrupts and so on, insead it uses a simply timer based system for the main alien swarm and other elements, e.g. bullets, just run at their own rate, both for animations, and for movement. It does not use an ECS, which if I was doing anything more complicated it would. Next project I plan to, but this was just a small few days project, while I sat around complaining about a horrid tooth ache, which has now been fixed with a root canal :-)
 
@@ -22,7 +23,7 @@ It is worth noting that the main goal of the project is to port it to the 32blit
    - [x] Basic Renderering
    - [ ] Colisions
       - [x] Full bounding box
-      - [ ] Partial damage
+      - [x] Partial damage
 - [ ] End of game
 - [ ] Levels
 - [ ] Sound
@@ -68,6 +69,9 @@ Thanks to Alexis Sellier (aka cloudhead) for the great pixel editor tool, [Rx](h
 Also I was, in part, inspired to write this game after watching Catherine West's RustConf'18 [keynote](https://www.youtube.com/watch?v=P9u8x13W7UE), where she talks about ECS implementations in Rust. In truth I'd not spent much time looking into ECSs before now and, as noted, while this code base does not use one, I've now read lots about them, played around with Specs, and more. I'm beginning to think about what such as system might look like for an MCU based system, such as the 32blit. What I really want is a tiny ECS that is very low overhead, both from a use case point of view, but also with respect to performance overhead.
 
 ## LICENSE
+
+The sound effects for the player bullets, player explosions, and alien explosions are from [Classics Space Invaders](https://www.classicgaming.cc/classics/space-invaders/sounds). The music for the aliens
+marching is made specifically and does not match 100% to the original.
 
 Licensed under either of
 

@@ -9,7 +9,7 @@ use std::time::{Duration, Instant};
 use either::*;
 use rand::{RngCore};
 
-use crate::sprite_sheet::{SpriteSheet, SheetJSON, AnimationJSON, Sprite};
+use crate::sprite_sheet::{SpriteSheet, SheetJSON, AnimationJSON, Sprite, SpriteMask};
 use crate::entity::*;
 use crate::animation::*;
 use crate::math::*;
@@ -113,7 +113,9 @@ pub struct World {
 
     /// has player died
     player_died: bool,
-    
+
+    /// shield bullet explosion mask
+    shield_bullet_explosion_mask: SpriteMask,
 
     /// explosion when alien bullet hits the ground 
     alien_bullet_explosion: Sprite,
@@ -167,6 +169,7 @@ impl World {
         splash: Sprite,
         digits: Digits,
         score_text: Score,
+        shield_bullet_explosion_mask: SpriteMask,
         player_bullet_explosion: Sprite,
         player_explosion: Animation,
         alien_bullet_explosion: Sprite,
@@ -218,6 +221,7 @@ impl World {
             player_explosion,
             player_died_timer: Timer::new(PLAYER_DIED_DURATION),
             player_died: false,
+            shield_bullet_explosion_mask,
             alien_bullet_explosion,
             player_alien_bullet_explosion,
             alien_bullet_explosiion_with_player_bullet,
@@ -243,6 +247,11 @@ impl World {
             explosions: vec![],
             ship,
         }
+    }
+
+    #[inline]
+    pub fn get_shield_bullet_explosion_mask(&self) -> SpriteMask {
+        self.shield_bullet_explosion_mask.clone()
     }
 
     #[inline]
@@ -812,7 +821,7 @@ pub fn initial_world_state() -> World {
     //let s = sheet_json.frames.get("Player.png").unwrap();
     let player_sprite = Sprite::new(s.frame.x as u32, s.frame.y as u32, s.frame.w as u32, s.frame.h as u32);
     let bounding_box = Rect::new(Point::new(0,0), Size::new(s.frame.w as u32, s.frame.h as u32));
-    let bullet_sprite = sheet_json.frames.get("player_bullet.png").unwrap();
+    let bullet_sprite = sheet_json.frames.get("player_bullet_small.png").unwrap();
     let player_bullet = Bullet::new(
         Point::new(0,0), 
         Left(Sprite::new(
@@ -899,6 +908,16 @@ pub fn initial_world_state() -> World {
         explosion_sprite.frame.w as u32, 
         explosion_sprite.frame.h as u32);
 
+    
+    // bullet explosion mask, used to cut out holes from sheild when it bullet collides
+    let barrier_explosion_sprite_mask = sheet_json.frames.get("bullet_barrier_mask.png").unwrap();
+    let barrier_explosion_sprite_mask = Sprite::new(
+        barrier_explosion_sprite_mask.frame.x as u32, 
+        barrier_explosion_sprite_mask.frame.y as u32,
+        barrier_explosion_sprite_mask.frame.w as u32, 
+        barrier_explosion_sprite_mask.frame.h as u32);
+    let shield_bullet_explosion_mask = barrier_explosion_sprite_mask.create_mask(&sprite_sheet);
+
     let alien_explosion_sprite = sheet_json.frames.get("alien_explosion.png").unwrap();
     //let explosion_sprite = sheet_json.frames.get("block.png").unwrap();
     let player_alien_bullet_explosion_sprite = Sprite::new(
@@ -941,6 +960,7 @@ pub fn initial_world_state() -> World {
         splash_sprite,
         digits,
         score_text,
+        shield_bullet_explosion_mask,
         player_bullet_explosion_sprite,
         player_explosion_sprite,
         alien_bullet_explosion_sprite,

@@ -295,6 +295,7 @@
                 <false/>
             </struct>
             <key type="filename">alien_bullet_explosiion_with_player_bullet.png</key>
+            <key type="filename">bullet_barrier_mask.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -366,6 +367,21 @@
                 <rect>1,3,1,5</rect>
                 <key>scale9Paddings</key>
                 <rect>1,3,1,5</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">player_bullet_small.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>0,3,1,5</rect>
+                <key>scale9Paddings</key>
+                <rect>0,3,1,5</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -510,6 +526,8 @@
             <filename>credit.png</filename>
             <filename>barrier.png</filename>
             <filename>splash.png</filename>
+            <filename>bullet_barrier_mask.png</filename>
+            <filename>player_bullet_small.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

@@ -8,17 +8,118 @@
 use crate::entity::*;
 use crate::world::*;
 use crate::math::*;
+use crate::sprite_sheet::{SpriteMask};
 
-fn collides_with_barrier(bounding_box: &Rect, barriers_info: &Vec<(EntityIndex, Rect)>) -> bool {
-    for i in barriers_info {
-        if i.1.intersects(bounding_box) {
-            return true;
+/// apply a mask to another mask, clearing any pixels that are set in both masks, when overlapped
+/// 
+/// # Arguments
+/// 
+/// * `x` - x position to apply mask
+/// * `y` - y position to apply mask
+/// * `apply_mask` - mask to apply
+/// * `mask` - mask that mask is applied to, this is side effected if masks overlap set pixels
+fn apply_mask(x: usize, y: usize, apply_mask: &SpriteMask, mask: &mut SpriteMask) {
+    for yy in 0..apply_mask.len() {
+        // don't go of the bottom of sprite
+        if y+yy >= mask.len() {
+            return;
+        }
+        else {
+            for xx in 0..apply_mask[0].len() {
+                // don't go of right edge of sprite
+                if x+xx >= mask[0].len() {
+                    break;
+                }
+                if apply_mask[yy][xx] != 0 {
+                    mask[y+yy][x+xx] = 0;   
+                }
+            }
         }
     }
+}
 
+/// handle player or alien bullet collisions with barriers, returns true in case of collison, otherwise false
+/// 
+/// # Arguments
+///
+/// * `is_alien`       - A boolean determing if the bullet is from an alien or player
+/// * `bounding_box`   - Bounding box of bullet
+/// * `explosion_mask` - mask applied to barrier mask, if bullet collides with any remaining pixels in barrier 
+/// *  `barriers_info` - Info related to all barriers that bullet could collide with. If a bullet collides with 
+///                      a barrier the barriers mask is updated to refect the hit, providing more of a passage 
+///                      through.
+fn collides_with_barrier(
+    is_alien: bool,
+    bounding_box: &Rect, 
+    explosion_mask: &SpriteMask,
+    barriers_info: &mut Vec<(EntityIndex, Rect, SpriteMask)>) -> bool {
+
+    for i in barriers_info {        
+        // first check intersection for barrier bounding box
+        if i.1.intersects(bounding_box) {
+            // now we need to dig deeper and check if the bullet intersects with the barrier sprite mask
+            let bullet_pos_x = if i.1.origin.x > bounding_box.origin.x {
+                i.1.origin.x - bounding_box.origin.x 
+            } else {
+                bounding_box.origin.x - i.1.origin.x
+            };
+
+            let barrier_height = i.1.size.height;
+            let barrier_width  = i.1.size.width>>2;  // TODO: actally address the multiple of 4 issue at its root 
+            let bullet_width   = bounding_box.size.width as usize >> 2;
+            let bpos = (bullet_pos_x as usize) >> 2;
+            let width = if bpos + bullet_width as usize > barrier_width as usize {
+                barrier_width as usize
+            }
+            else {
+                bpos + bullet_width as usize
+            };
+
+            if is_alien {
+                // handle alien bullet, which will becoming from top down
+                let mask = &mut i.2;
+                for y in 0..barrier_height as usize {
+                    for x in (bullet_pos_x as usize) >> 2..width as usize {
+                        if mask[y][x] == 1 {
+                            apply_mask(x-2, y, explosion_mask, mask);
+                            return true;
+                        }
+                    }
+                }
+            }
+            else {
+                // handle player bullet, which will becoming from bottom up
+                let mask = &mut i.2;
+                let bpos_y = (i.1.origin.y + i.1.size.height) - bounding_box.origin.y;
+                // iterate from bottom of barrier when the bullet hit, moving up until we find a set pixel to distory
+                for y in (0..=barrier_height as usize).rev() {
+                    for x in bpos..width { 
+                        // is barrier pixel set
+                        if mask[y][x] == 1 {
+                            // we move up to apply mask and clamp if at top of barrier mask
+                            let y_clamped = 
+                                if y as i32 - explosion_mask.len() as i32 > 0 {
+                                    (y - explosion_mask.len())+1
+                                } 
+                                else {
+                                    0
+                                };
+                            apply_mask(bpos, y_clamped, explosion_mask, mask);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
     false
 }
 
+/// handle any alien and player bullet collisions, with barriers, the player, and aliens
+/// 
+/// # Arguments
+/// 
+/// * `world` - The game world
 pub fn bullet_collision_system(world: &mut World) {
 
     // get the players position, used to check again alien bullets
@@ -37,7 +138,7 @@ pub fn bullet_collision_system(world: &mut World) {
                 player_bullet_bounding_box = player.bullet.get_bounding_box();
                 player_bounding_box.origin = player.bullet.position;
                 player_bullet_bounding_box.size = 
-                    Size::new(player_bullet_bounding_box.size.width*4, player_bullet_bounding_box.size.height);
+                    Size::new(player_bullet_bounding_box.size.width, player_bullet_bounding_box.size.height);
                 player_bullet_in_flight = true;
             }
         }
@@ -52,7 +153,8 @@ pub fn bullet_collision_system(world: &mut World) {
                     (index, 
                      Rect::new(
                          barrier.bounding_box.origin, 
-                         Size::new(barrier.bounding_box.size.width*4, barrier.bounding_box.size.height))));
+                         Size::new(barrier.bounding_box.size.width*4, barrier.bounding_box.size.height)),
+                     barrier.mask.clone()));
             }
         }
     }
@@ -61,6 +163,8 @@ pub fn bullet_collision_system(world: &mut World) {
     let mut player_bullet_killed = false;
     let mut explosions: Vec<BulletExplosion> = vec![];
     let bullet_explosion_sprite = world.get_alien_bullet_explosion_sprite();
+    let shield_bullet_explosion_mask = world.get_shield_bullet_explosion_mask();
+    let mut barrier_update = false;
     // handle alien bullet collisions
     for index in world.get_alien_bullets().iter() {
         if let Some(entity) = world.get_mut_entity(*index) {
@@ -72,7 +176,12 @@ pub fn bullet_collision_system(world: &mut World) {
                     bullet_bounding_box.origin = bullet.position;
 
                     // first check if collides with barrier
-                    if collides_with_barrier(&bullet_bounding_box, &barriers) {
+                    if collides_with_barrier(
+                        true,
+                        &bullet_bounding_box, 
+                        &shield_bullet_explosion_mask, 
+                        &mut barriers) {
+                        barrier_update = true;
                         bullet.bullet_mode = BulletMode::Fire;
                     }
                     else if bullet.position.x >= player_position.x && 
@@ -103,7 +212,7 @@ pub fn bullet_collision_system(world: &mut World) {
                 }
             }
         }
-    }
+    } 
 
     // now handle a player death
     if player_killed || player_bullet_killed {
@@ -154,7 +263,12 @@ pub fn bullet_collision_system(world: &mut World) {
         if let Entity::Player(player) = entity {
             if player.bullet.bullet_mode == BulletMode::InFlight {
                 // first check if collides with barrier
-                if collides_with_barrier(&player_bullet_bounding_box, &barriers) {
+                if collides_with_barrier(
+                    false,
+                    &player_bullet_bounding_box, 
+                    &shield_bullet_explosion_mask,
+                    &mut barriers) {
+                    barrier_update  = true;
                     player.bullet.bullet_mode = BulletMode::Fire;
                 }
                 else {
@@ -190,6 +304,18 @@ pub fn bullet_collision_system(world: &mut World) {
             }
         }
     }
+
+    // update barrier mask if bullet collided
+    if barrier_update {
+        for i in barriers {
+            if let Some(entity) = world.get_mut_entity(i.0) {
+                if let Entity::Barrier(barrier) = entity {
+                    barrier.mask = i.2;
+                }
+            }
+        }
+    }
+
     
     //if update_player_bullet {
     if let Some(alien_bounding_box) = bounding_box {
