@@ -29,7 +29,7 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 - [ ] Sound
    - [x] Sound effects for player, alien, and bullets
    - [ ] Sound track
-- [ ] Push to git hub
+- [x] Push to git hub
 
 ## Rust
 
