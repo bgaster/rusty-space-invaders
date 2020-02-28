@@ -29,9 +29,9 @@ extern crate serde_derive;
 #[macro_use]
 extern crate lazy_static;
 
-#[macro_use]
 extern crate either;
 
+extern crate confy;
 extern crate serde;
 extern crate serde_json;
 
@@ -40,23 +40,11 @@ extern crate line_drawing;
 
 extern crate rand;
 
-use image::{Rgba};
-
-use pixels::{wgpu::Surface, Error, Pixels, SurfaceTexture};
-use winit::dpi::LogicalSize;
-use winit::event::{Event, VirtualKeyCode, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::WindowBuilder;
-use winit_input_helper::WinitInputHelper;
-use gilrs::{Button, Gilrs};
-
-use log::{info, trace, warn};
+use pixels::{Error};
+use winit::event_loop::{ControlFlow};
 
 mod sprite_sheet;
-use crate::sprite_sheet::*;
-
 mod frame;
-use crate::frame::*;
 
 mod controls;
 use crate::controls::*;
@@ -84,6 +72,9 @@ use crate::collision::*;
 mod timer;
 mod text;
 mod sound;
+mod config;
+
+use config::*;
 
 /// Entry point for space invaders
 /// 
@@ -94,13 +85,17 @@ fn main() -> Result<(), Error> {
     // create the hardware interface ... wgpu/pixels on desktop and 32bit for STM hardware (TODO)
     let (event_loop, mut interface) = create_interface("Space Invaders");
     
-    // create the initial state of the game world
-    let mut world = initial_world_state();
+    // load config
+    let mut config = Config::new();
 
-    world.reset_lag();
+    // create the initial state of the game world
+    let mut world = initial_world_state(&config);
+    
+    // enter game loop
     event_loop.run(move |event, _, control_flow| {
         let current_state = world.get_current_state();
 
+        // do we need to update the display
         if interface.render(&event) {
             // render game if playing or paused
             if  current_state == GameState::Playing || current_state == GameState::Paused {
@@ -119,23 +114,30 @@ fn main() -> Result<(), Error> {
         let (should_exit, controls) = interface.handle_input(event);        
 
         // check if we should quit and exit if requested
-        if should_exit || is_game_over(&world) {
+        if should_exit {
+            // fetch and store high score for next play
+            config.udpate_highscore(world.get_high_score());
+            config.store();
             *control_flow = ControlFlow::Exit;
             return;
         }
         
+        // handle the state when game is in full swing
         if  current_state == GameState::Playing {
             world.play_music(0);
             // handle updates for player, alien, and ship components
             player_control_system(&mut world, controls);
+            // handle movment update for all types of bullets
             bullet_control_system(&mut world);
-
+            // handle movement updates for aliens
             alien_control_system(&mut world);
+            // handle movment of UFO
             ship_control_system(&world);
 
             // handle bullet collisons, possible end game state reached on return...
             bullet_collision_system(&mut world);
 
+            // handle the audio system
             audio_system(&world);
 
             // finally update the world to handle any internal changes
@@ -149,6 +151,19 @@ fn main() -> Result<(), Error> {
                     world.set_current_state(GameState::Playing);
                 }
             }
+        }
+
+        // game over? 
+        if current_state == GameState::GameOver {
+            world.set_current_state(GameState::Splash);
+            world.pause_music();
+            new_game(&mut world);
+        }
+        //move on to next level?
+        else if current_state == GameState::NextLevel {
+            world.pause_music();
+            next_level(&mut world);
+            world.set_current_state(GameState::Playing);
         }
 
         interface.request_redraw();

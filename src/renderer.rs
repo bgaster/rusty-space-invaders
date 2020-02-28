@@ -71,11 +71,16 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
             }
 
             // draw scores
+
+            // player 1 score
             world.get_digits().render_num(player.score as u32, Point::new(250,30), sheet, &mut frame); 
             world.get_score_text().render_player1(Point::new(150,5), sheet, &mut frame);
+
+            // high score
             world.get_score_text().render_hi_score(Point::new(700,5), sheet, &mut frame);
-            // TODO: add support hi-scores...
-            world.get_digits().render_num(0, Point::new(840,30), sheet, &mut frame); 
+            world.get_digits().render_num(world.get_high_score(), Point::new(840,30), sheet, &mut frame); 
+            
+            // player 2 score (which as there is no player 2 at the moment ...)
             world.get_score_text().render_player2(Point::new(1300,5), sheet, &mut frame);
         
             // draw credits

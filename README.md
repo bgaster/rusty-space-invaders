@@ -2,7 +2,7 @@
 
 An emulation of the original space invaders. The behaviour somewhat follows that described by Chris Cantrell at [Computer Archeology](https://computerarcheology.com/A.rcade/SpaceInvaders/). Below is the standard screen shot of some game play.
 
-![screen shot](./assets/screen_shot_game_play.png)
+![screen shot](./assets/screen_shot_game_play.png) ![screen shot](./assets/screen_shot_splash.png)
 
 Another useful place for details of how the game works can be found [here](https://www.classicgaming.cc/classics/space-invaders/play-guide).
          
@@ -14,21 +14,30 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 
 ## TODO
 
-- [ ] Hi score
+- [x] Hi score
+   - [x] Configuration, so high (and version) are presistent across execution instances of game
 - [x] Splash Screen
 - [ ] Start Screen
 - [ ] Domumentation
-- [ ] Barriers
+- [x] Barriers
    - [x] Sprites
    - [x] Basic Renderering
-   - [ ] Colisions
+   - [x] Colisions
       - [x] Full bounding box
       - [x] Partial damage
 - [ ] End of game
+   - [x] Functionality to reset game
+   - [ ] Screen showing end of game text
+   - [ ] Timer to provide slide delay between end of game and new game/splash screen
 - [ ] Levels
+   - [x] Next level functionality
+   - [ ] Timer to slightly delay next level starting
 - [ ] Sound
    - [x] Sound effects for player, alien, and bullets
    - [ ] Sound track
+      - [x] Ableton to generate 80, 100, 120, and so BPM loops for different speed of alien swarms
+      - [x] Intergrate music into game
+      - [ ] Change music tempo when aliens die
 - [x] Push to git hub
 
 ## Rust
@@ -73,7 +82,7 @@ Also I was, in part, inspired to write this game after watching Catherine West's
 The sound effects for the player bullets, player explosions, and alien explosions are from [Classics Space Invaders](https://www.classicgaming.cc/classics/space-invaders/sounds). The music for the aliens
 marching is made specifically and does not match 100% to the original.
 
-Licensed under either of
+Licensed under any of
 
     Apache License, Version 2.0 (LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0)
     MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)

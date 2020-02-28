@@ -345,14 +345,26 @@ pub fn bullet_collision_system(world: &mut World) {
             *world.get_mut_alien_speed() += 3;
         }
 
+        let mut updated_score = 0;
         if let Some(entity) = world.get_mut_entity(world.get_player()) {
             if let Entity::Player(player) = entity {
                 player.bullet.bullet_mode = BulletMode::Fire;
                 // add points to players score
                 player.score += player_points_inc;
+                updated_score = player.score;
             }
         }
 
         world.play_alien_explosion();
+
+        // check high-score and update, if necessary
+        if world.get_high_score() < updated_score as u32 {
+            *world.get_mut_high_score() = updated_score as u32;
+        }
+
+        // should move to next level?
+        if world.get_current_state() == GameState::Playing && world.get_alien_dead() == World::number_aliens() {
+            world.set_current_state(GameState::NextLevel);
+        }
     }
 }

@@ -89,6 +89,7 @@ pub struct Sound {
     player_shot_sink: Sink,
     /// sink for playing sound track
     music_sink: Vec<Sink>,
+    current_bpm: usize,
 
     // sound effects
     player_shot_data: io::Cursor<SoundData>,
@@ -101,7 +102,7 @@ impl Sound {
         player_shot: &str,
         player_explosion: &str,
         alien_explosion: &str,
-        music_slow: Vec<&str>) -> Self{
+        music: Vec<&str>) -> Self{
 
         let player_shot = SoundData::new(player_shot);
         let player_explosion = SoundData::new(player_explosion);
@@ -114,14 +115,14 @@ impl Sound {
         let player_shot_sink = Sink::new(&device);
         let alien_explosion_sink = Sink::new(&device);
 
-        for s in music_slow {
-            let music_slow = SoundData::new(s);
-            let music_slow = rodio::Decoder::new(io::Cursor::new(music_slow)).unwrap()
+        for s in music {
+            let music = SoundData::new(s);
+            let music = rodio::Decoder::new(io::Cursor::new(music)).unwrap()
                 .repeat_infinite().
                 speed(1.0);
 
             let music_sink   = Sink::new(&device);
-            music_sink.append(music_slow);
+            music_sink.append(music);
             music_sink.pause();
             music_sinks.push(music_sink);
         }
@@ -133,19 +134,36 @@ impl Sound {
             alien_explosion_sink,
             player_shot_sink,
             music_sink: music_sinks,
+            current_bpm: 0,
             player_shot_data: io::Cursor::new(player_shot),
             player_explosion_data: io::Cursor::new(player_explosion),
             alien_explosion_data: io::Cursor::new(alien_explosion),
         }
     }
 
-    /// play alien marching slow mode
-    pub fn play_music(&self, bpm: usize) {
+    /// play alien marching music
+    /// 
+    /// If there is music currenlty playing, then it is paused, and the new
+    /// bpm is started
+    /// 
+    /// # Arguments 
+    /// 
+    /// * `index`: index of music to play
+    pub fn play_music(&mut self, bpm: usize) {
+        // force to be inbounds, avoiding any panics
+        let bpm = bpm % self.music_sink.len();
+        self.music_sink[self.current_bpm].pause();
         self.music_sink[bpm].play();
+        self.current_bpm = bpm;
     }
 
-    pub fn pause_music(&self, bpm: usize) {
-        self.music_sink[bpm].pause();
+    pub fn number_of_music_variants(&self) -> usize {
+        self.music_sink.len()
+    }
+
+    /// pause current music if playing, if no music is playing nothing is changed
+    pub fn pause_music(&self) {
+        self.music_sink[self.current_bpm].pause();
     }
 
     /// play sound for player's shot

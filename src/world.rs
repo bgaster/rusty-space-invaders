@@ -17,6 +17,7 @@ use crate::interface::*;
 use crate::timer::*;
 use crate::text::*;
 use crate::sound::*;
+use crate::config::*;
 
 //------------------------------------------------------------------------------
 
@@ -73,6 +74,7 @@ lazy_static! {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameState {
     Playing,
+    NextLevel,
     Paused,
     Splash,
     GameOver,
@@ -101,6 +103,12 @@ pub struct World {
 
     /// score text stuff
     score_text: Score,
+
+    /// current level,
+    current_level: u32,
+
+    /// current high score
+    high_score: u32,
 
     /// explosion when player bullet hits top of internal screen 
     player_bullet_explosion: Sprite,
@@ -169,6 +177,7 @@ impl World {
         splash: Sprite,
         digits: Digits,
         score_text: Score,
+        high_score: u32,
         shield_bullet_explosion_mask: SpriteMask,
         player_bullet_explosion: Sprite,
         player_explosion: Animation,
@@ -217,6 +226,8 @@ impl World {
             splash,
             digits,
             score_text,
+            high_score,
+            current_level: 1,
             player_bullet_explosion,
             player_explosion,
             player_died_timer: Timer::new(PLAYER_DIED_DURATION),
@@ -250,13 +261,43 @@ impl World {
     }
 
     #[inline]
+    pub fn get_high_score(&self) -> u32 {
+        self.high_score
+    }
+
+    #[inline]
+    pub fn get_mut_high_score(&mut self) -> &mut u32 {
+        &mut self.high_score
+    }
+
+    #[inline]
+    pub fn get_current_level(&self) -> u32 {
+        self.current_level
+    }
+
+    #[inline]
+    pub fn get_mut_current_level(&mut self) -> &mut u32 {
+        &mut self.current_level
+    }
+
+    #[inline]
+    pub fn current_level_inc(&mut self) {
+        self.current_level += 1;
+    }
+
+    #[inline]
     pub fn get_shield_bullet_explosion_mask(&self) -> SpriteMask {
         self.shield_bullet_explosion_mask.clone()
     }
 
     #[inline]
-    pub fn play_music(&self, bpm: usize) {
+    pub fn play_music(&mut self, bpm: usize) {
         self.sound.play_music(bpm);
+    }
+
+    #[inline]
+    pub fn pause_music(&self) {
+        self.sound.pause_music();
     }
 
     #[inline]
@@ -722,19 +763,24 @@ impl World {
     }
 }
 
-// create the state of the inital game world
-pub fn initial_world_state() -> World {
+/// create the state of the inital game world
+///
+/// Arguments
+/// 
+/// * `config` - Game configuration file, contains high score and so on
+pub fn initial_world_state(config: &Config) -> World {
 
     //TODO: need to use relative paths for JSONs :-)
 
     // load JSON files for sprites and animations
-    let sheet_json   = SheetJSON::new("/Users/br-gaster/dev/space-invaders/assets/sprite-sheet.json");
-    let anis_json   = AnimationJSON::from_json("/Users/br-gaster/dev/space-invaders/assets/sprite-animation.json");
+    //let sheet_json   = SheetJSON::new("/Users/br-gaster/dev/space-invaders/assets/sprite-sheet.json");
+    let sheet_json   = SheetJSON::new("./assets/sprite-sheet.json");
+    let anis_json   = AnimationJSON::from_json("./assets/sprite-animation.json");
 
     // create resources
 
     // sprite sheet used by render and indexed by sprites (and by implication animations)
-    let sprite_sheet = SpriteSheet::new("/Users/br-gaster/dev/space-invaders/assets/sprite-sheet.png");
+    let sprite_sheet = SpriteSheet::new("./assets/sprite-sheet.png");
 
     // TODO: fix to be below text, once we have text
     let bounds = Rect::new(
@@ -745,8 +791,6 @@ pub fn initial_world_state() -> World {
 
     let alien_swarm_position = Point::new(ALIEN_TOP_LEFT_X_START_POSITION, ALIEN_TOP_LEFT_Y_START_POSITION);
     let alien_swarm_direction = 1;
-
-    // TODO: add clock
 
     // create entities
     
@@ -936,16 +980,16 @@ pub fn initial_world_state() -> World {
 
     // load sounds
     let sound = Sound::new(
-        "/Users/br-gaster/dev/space-invaders/assets/sounds/player_shoot_16bit.wav",
-        "/Users/br-gaster/dev/space-invaders/assets/sounds/player_explosion_16bit.wav",
-        "/Users/br-gaster/dev/space-invaders/assets/sounds/alien_explosion_16bit.wav",
-        vec!["/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_80bpm.wav",
-            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_100bpm.wav",
-            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_120bpm.wav",
-            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_140bpm.wav",
-            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_160bpm.wav",
-            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_180bpm.wav",
-            "/Users/br-gaster/dev/space-invaders/assets/sounds/invader_march_200bpm.wav"]);
+        "./assets/sounds/player_shoot_16bit.wav",
+        "./assets/sounds/player_explosion_16bit.wav",
+        "./assets/sounds/alien_explosion_16bit.wav",
+        vec!["./assets/sounds/invader_march_80bpm.wav",
+            "./assets/sounds/invader_march_100bpm.wav",
+            "./assets/sounds/invader_march_120bpm.wav",
+            "./assets/sounds/invader_march_140bpm.wav",
+            "./assets/sounds/invader_march_160bpm.wav",
+            "./assets/sounds/invader_march_180bpm.wav",
+            "./assets/sounds/invader_march_200bpm.wav"]);
 
     // load text
     let digits = Digits::new(&sheet_json);
@@ -960,6 +1004,7 @@ pub fn initial_world_state() -> World {
         splash_sprite,
         digits,
         score_text,
+        config.get_high_score(),
         shield_bullet_explosion_mask,
         player_bullet_explosion_sprite,
         player_explosion_sprite,
@@ -975,4 +1020,131 @@ pub fn initial_world_state() -> World {
         alien_bullet3,
         aliens,
         ship)
+}
+
+/// reset set the player to beginning of round state
+/// 
+/// # Arguments
+/// 
+/// * `world` Game world to be updated
+fn reset_barriers(world: &mut World) {
+    
+    // get ref to sprite sheet 
+    let sheet = world.get_sprite_sheet();
+
+    // get list if masks, one for each barrier
+    let mut masks = vec![];
+    for index in world.get_barriers() {
+        if let Some(entity) = world.get_entity(index) {
+            if let Entity::Barrier(barrier) = entity {
+                masks.push(barrier.sprite.create_mask(&sheet));
+            }
+        }
+    }
+
+    // now update the actual barriers with their initial mask, created above
+    for index in 0..world.get_number_barriers() {
+        if let Some(entity) = world.get_mut_entity(world.get_barrier(index)) {
+            if let Entity::Barrier(barrier) = entity {
+                barrier.mask = masks[index].clone();
+            }
+        }
+    }
+}
+
+/// reset set the player to beginning of round state
+/// 
+/// # Arguments
+/// 
+/// * `world` Game world to be updated
+fn reset_player(reset_lives_score: bool, world: &mut World) {
+    if let Some(entity) = world.get_mut_entity(world.get_player()) {
+        if let Entity::Player(player) = entity {
+            player.position = Point::new(PLAYER_TOP_LEFT_X_START_POSITION, PLAYER_TOP_LEFT_Y_START_POSITION);
+            player.bounding_box.origin = player.position;
+            if reset_lives_score {
+                player.score = PLAYER_INITIAL_SCORE;
+                player.lives_remaining = PLAYER_START_LIVES;
+            }
+        }
+    }
+}
+
+/// reset set the alien to beginning of round state, their y position varies depending on the round
+/// 
+/// # Arguments
+/// 
+/// * `world` Game world to be updated
+pub fn reset_aliens(round: u32, world: &mut World) {
+
+    // The first round is set in initial world, then
+    //  - for round 2 aliens start lower
+    //  - for round 3,4,5 start lower again
+    //  - for all other rounds they start lower again, but do not get any lower
+    let vert_offset = match round {
+        1 => 0,
+        2 => 5*4,
+        3 | 4 | 5 => 10*4,
+        _ => 16*4,
+    };
+
+    // set the top left position of swarm
+    let alien_swarm_position = Point::new(ALIEN_TOP_LEFT_X_START_POSITION, ALIEN_TOP_LEFT_Y_START_POSITION);
+    *world.get_mut_alien_swarm_top_left_postion() = alien_swarm_position;
+    let alien_swarm_direction = 1;
+    *world.get_mut_alien_swarm_direction() = alien_swarm_direction;
+
+    *world.get_mut_alien_speed() = ALIEN_INITIAL_SPEED;
+
+    let mut pos = Point::new(ALIEN_TOP_LEFT_X_START_POSITION, ALIEN_TOP_LEFT_Y_START_POSITION + vert_offset);
+    let transform = Vector::new(ALIEN_SPACING_HORZ, 0);
+
+    for alien_index in 0..world.get_number_aliens() {
+        if alien_index % NUMBER_ALIEN_COLUMNS == 0 {
+            pos = Point::new(
+                ALIEN_TOP_LEFT_X_START_POSITION, 
+                ALIEN_TOP_LEFT_Y_START_POSITION + 
+                vert_offset + ALIEN_SPACING_VERT*(alien_index/NUMBER_ALIEN_COLUMNS) as u32);
+        }
+
+        if let Some(entity) = world.get_mut_entity(world.get_alien(alien_index)) {
+            if let Entity::Alien(alien) = entity {
+                alien.position = pos;
+                alien.bounding_box.origin = Point::new(0,0);
+                alien.is_alive = true;
+            }
+        }
+
+        pos += transform;
+    }
+}
+
+/// Setup for next level, restoring/resetting/configuring barriers, player, and aliens
+/// 
+/// # Arguments
+/// 
+/// * `world` World to be updated for next level play
+pub fn next_level(world: &mut World) {
+    
+    // increment current level
+    world.current_level_inc();
+
+    reset_barriers(world);
+    reset_player(false, world);
+    reset_aliens(world.get_current_level(), world);
+}
+
+/// Setup for next level, restoring/resetting/configuring barriers, player, and aliens
+/// 
+/// # Arguments
+/// 
+/// * `world` World to be updated for next level play
+pub fn new_game(world: &mut World) {
+    
+    // increment current level
+    *world.get_mut_current_level() = 1;
+
+    reset_barriers(world);
+    reset_player(true, world);
+    reset_aliens(world.get_current_level(), world);
 }

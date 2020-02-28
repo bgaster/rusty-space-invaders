@@ -16,8 +16,8 @@ use crate::math::*;
 
 pub type EntityIndex = usize;
 
-const PLAYER_START_LIVES: i32 = 3;
-const PLAYER_INITIAL_SCORE: i32 = 0;
+pub const PLAYER_START_LIVES: i32 = 3;
+pub const PLAYER_INITIAL_SCORE: i32 = 0;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum BulletMode {
