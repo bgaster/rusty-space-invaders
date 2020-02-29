@@ -2,7 +2,7 @@
 
 An emulation of the original space invaders. The behaviour somewhat follows that described by Chris Cantrell at [Computer Archeology](https://computerarcheology.com/A.rcade/SpaceInvaders/). Below is the standard screen shot of some game play.
 
-![screen shot](./assets/screen_shot_game_play.png) ![screen shot](./assets/screen_shot_splash.png)
+![](./assets/space_invaders_sample_play.gif)
 
 Another useful place for details of how the game works can be found [here](https://www.classicgaming.cc/classics/space-invaders/play-guide).
          
@@ -12,13 +12,18 @@ It is worth noting that the main goal of the project is to port it to the 32blit
  
 [32blit: retro-inspired handheld with open-source firmware](https://www.kickstarter.com/projects/pimoroni/32blit-retro-inspired-handheld-with-open-source-fi)
 
-## TODO
+## TODOs
 
 - [x] Hi score
-   - [x] Configuration, so high (and version) are presistent across execution instances of game
+   - [x] Configuration, so highscore (and version) are presistent across execution instances of game
 - [x] Splash Screen
 - [ ] Start Screen
 - [ ] Domumentation
+   - [ ] Document code
+   - [x] README.md
+- [ ] UFOs
+   - [x] Design Sprite
+   - [ ] Implement in game
 - [x] Barriers
    - [x] Sprites
    - [x] Basic Renderering
@@ -42,7 +47,7 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 
 ## Rust
 
-It is implement using [Rust](https://www.rust-lang.org/), mostly because I like it and I'm trying to explore different ideas to better understand the language and game programming in general.
+It is implemented using [Rust](https://www.rust-lang.org/), mostly because I like it and I'm trying to explore different ideas to better understand the language and game programming in general.
 
 The code base is very simple and builds with stable, I used 1.41.0 (5e1a79984 2020-01-27), on OS X. It should build on any platform, although I have not tested it and it does require Portaudio. There are a few things that could be fixed, in particular, a couple of timing 'hacks' and as some sprites are animated, e.g. player explosion, and some not, a few places an Either type is used to allow either type to be used. I suppose this should really be abstracted out into a trait, maybe some day :-).
 
