@@ -19,13 +19,18 @@ pub type EntityIndex = usize;
 pub const PLAYER_START_LIVES: i32 = 3;
 pub const PLAYER_INITIAL_SCORE: i32 = 0;
 
+/// current state of a bullet
 #[derive(Debug, Clone, PartialEq)]
 pub enum BulletMode {
+    /// bullet loaded and ready to be fired
     Fire,
+    /// bullet in flight
     InFlight,
+    /// bullet has hit something and exploding, not yet ready to be fired
     Explode,
 }
 
+/// different types of alien bullets
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum AlienBulletType {
     Rolling = 0,
@@ -34,6 +39,7 @@ pub enum AlienBulletType {
 }
 
 impl AlienBulletType {
+    /// given one bullet type, return the next
     pub fn next(&self) -> Self {
         let n = *self as u32 + 1;
         match n % 3 {
@@ -59,6 +65,13 @@ pub struct Bullet {
 }
 
 impl Bullet {
+    /// create a new bullet
+    /// 
+    /// # Arguments
+    /// 
+    /// * `position` - initial position of bullet
+    /// * `sprite`   - sprite or animation used to render bullet
+    /// * `bounding_box` - bounding box of bullet, used in collision detection
     pub fn new(position: Point, sprite: Either<Sprite,Animation>, bounding_box: Rect,) -> Self {
         Bullet {
             position,
@@ -68,6 +81,7 @@ impl Bullet {
         }
     }
 
+    /// returns a copy of bullet's bounding box
     pub fn get_bounding_box(&self) -> Rect {
         Rect::new(
             self.position,
@@ -78,12 +92,22 @@ impl Bullet {
 /// Representation of bullet explosion entity
 #[derive(Debug, Clone)]
 pub struct BulletExplosion {
+    /// position of bullet explosion on screen
     pub position: Point,
+    /// sprite or animation used to render explosion
     pub sprite: Either<Sprite,Animation>,
+    /// how long it should be live/displayed for
     pub framecount: i32,
 }
 
 impl BulletExplosion {
+    /// create a new bullet explosion
+    /// 
+    /// # Arguments
+    /// 
+    /// * `position` - position of explosion on screen
+    /// * `sprite` - sprite or animation used to render explosion
+    /// * `framecount` - how long should the explosion live/displayed
     pub fn new(position: Point, sprite: Either<Sprite,Animation>, framecount: i32) -> Self {
         BulletExplosion {
             position,
@@ -112,6 +136,13 @@ pub struct Player {
 }
 
 impl Player {
+    /// create a new players
+    /// 
+    /// # Arguments 
+    /// 
+    /// * `position` - initial position of player on screen
+    /// * `sprite` - sprite used to render player
+    /// * `bounding_box` - bounding box for player sprite
     pub fn new(position: Point, sprite: Sprite, bullet: Bullet, bounding_box: Rect) -> Self {
         Player {
             position,
@@ -123,6 +154,7 @@ impl Player {
         }
     }
 
+    /// returns a copy of the player's bouding box
     pub fn get_bounding_box(&self) -> Rect {
         // TODO: resolve the *4 hack!!
         Rect::new(
@@ -165,6 +197,7 @@ impl Barrier {
 
 #[derive(Debug, Clone)]
 pub struct Alien {
+    /// screen position of alien
     pub position: Point,
     pub points: i32,
     pub bounding_box: Rect,
@@ -197,6 +230,7 @@ impl Alien {
 
 #[derive(Debug, Clone)]
 pub struct Ship {
+    /// screen position of ship
     pub position: Point,
     pub sprite: Sprite,
     pub points: i32,
