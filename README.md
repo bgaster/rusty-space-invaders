@@ -17,7 +17,6 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 - [x] Hi score
    - [x] Configuration, so highscore (and version) are presistent across execution instances of game
 - [x] Splash Screen
-- [ ] Start Screen
 - [ ] Domumentation
    - [ ] Document code
    - [x] README.md
@@ -25,6 +24,7 @@ It is worth noting that the main goal of the project is to port it to the 32blit
    - [x] Design Sprite
    - [ ] Implement in game
 - [x] Gamepad support
+- [ ] Alien invasion
 - [x] Barriers
    - [x] Sprites
    - [x] Basic Renderering
@@ -34,16 +34,16 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 - [ ] End of game
    - [x] Functionality to reset game
    - [ ] Screen showing end of game text
-   - [ ] Timer to provide slide delay between end of game and new game/splash screen
-- [ ] Levels
+   - [x] Timer to provide delay between end of game and new game/splash screen
+- [x] Levels
    - [x] Next level functionality
-   - [ ] Timer to slightly delay next level starting
-- [ ] Sound
+   - [x] Timer to slightly delay next level starting
+- [x] Sound
    - [x] Sound effects for player, alien, and bullets
-   - [ ] Sound track
+   - [x] Sound track
       - [x] Ableton to generate 80, 100, 120, and so BPM loops for different speed of alien swarms
       - [x] Intergrate music into game
-      - [ ] Change music tempo when aliens die
+      - [x] Change music tempo when aliens die
 - [ ] Port to Raspberry Pi
    - [ ] Raylib backend
 - [x] Push to git hub

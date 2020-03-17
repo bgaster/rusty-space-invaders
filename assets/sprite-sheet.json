@@ -152,6 +152,62 @@
 	"spriteSourceSize": {"x":0,"y":0,"w":122,"h":14},
 	"sourceSize": {"w":122,"h":14}
 },
+"letter_a.png":
+{
+	"frame": {"x":326,"y":485,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
+"letter_e.png":
+{
+	"frame": {"x":338,"y":485,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
+"letter_g.png":
+{
+	"frame": {"x":342,"y":469,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
+"letter_m.png":
+{
+	"frame": {"x":350,"y":485,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
+"letter_o.png":
+{
+	"frame": {"x":354,"y":469,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
+"letter_r.png":
+{
+	"frame": {"x":362,"y":485,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
+"letter_v.png":
+{
+	"frame": {"x":366,"y":469,"w":10,"h":14},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
+	"sourceSize": {"w":10,"h":14}
+},
 "Player.png":
 {
 	"frame": {"x":97,"y":453,"w":26,"h":16},
@@ -234,7 +290,7 @@
 },
 "text_0.png":
 {
-	"frame": {"x":326,"y":485,"w":10,"h":14},
+	"frame": {"x":374,"y":485,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -242,7 +298,7 @@
 },
 "text_1.png":
 {
-	"frame": {"x":338,"y":485,"w":10,"h":14},
+	"frame": {"x":378,"y":469,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -250,7 +306,7 @@
 },
 "text_2.png":
 {
-	"frame": {"x":342,"y":469,"w":10,"h":14},
+	"frame": {"x":386,"y":485,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -258,7 +314,7 @@
 },
 "text_3.png":
 {
-	"frame": {"x":350,"y":485,"w":10,"h":14},
+	"frame": {"x":390,"y":469,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -266,7 +322,7 @@
 },
 "text_4.png":
 {
-	"frame": {"x":354,"y":469,"w":10,"h":14},
+	"frame": {"x":398,"y":485,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -274,7 +330,7 @@
 },
 "text_5.png":
 {
-	"frame": {"x":362,"y":485,"w":10,"h":14},
+	"frame": {"x":402,"y":469,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -282,7 +338,7 @@
 },
 "text_6.png":
 {
-	"frame": {"x":366,"y":469,"w":10,"h":14},
+	"frame": {"x":410,"y":485,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -290,7 +346,7 @@
 },
 "text_7.png":
 {
-	"frame": {"x":374,"y":485,"w":10,"h":14},
+	"frame": {"x":414,"y":469,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -298,7 +354,7 @@
 },
 "text_8.png":
 {
-	"frame": {"x":378,"y":469,"w":10,"h":14},
+	"frame": {"x":422,"y":485,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -306,7 +362,7 @@
 },
 "text_9.png":
 {
-	"frame": {"x":386,"y":485,"w":10,"h":14},
+	"frame": {"x":426,"y":469,"w":10,"h":14},
 	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":10,"h":14},
@@ -319,6 +375,6 @@
 	"format": "RGBA8888",
 	"size": {"w":452,"h":500},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:411af2499bf53cfe49d16d499b08b93e:1856d3c92bf79bf58b810beb83e1be6c:4cb984b15aa0f50ff47c18de1fc08384$"
+	"smartupdate": "$TexturePacker:SmartUpdate:c3aa5f5f2c9ba6ea272106dc9beb6613:f907fb8d6ecef349cd64b5be545c5717:4cb984b15aa0f50ff47c18de1fc08384$"
 }
 }

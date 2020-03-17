@@ -104,7 +104,6 @@ fn main() {
             }
             // should we display the gameover screen
             else if current_state == GameState::GameOver {
-
             }
             // or otherwise might be the splash screen
             else if current_state == GameState::Splash {
@@ -159,15 +158,20 @@ fn main() {
 
         // game over? 
         if current_state == GameState::GameOver {
-            world.set_current_state(GameState::Splash);
             world.pause_music();
-            new_game(&mut world);
+            // is it time to move on?
+            if world.has_game_over_timer_expired() {
+                world.set_current_state(GameState::Splash);
+                new_game(&mut world);
+            }
         }
         //move on to next level?
         else if current_state == GameState::NextLevel {
             world.pause_music();
-            next_level(&mut world);
-            world.set_current_state(GameState::Playing);
+            if world.has_next_level_timer_expired() {
+                next_level(&mut world);
+                world.set_current_state(GameState::Playing);
+            }
         }
 
         interface.request_redraw();

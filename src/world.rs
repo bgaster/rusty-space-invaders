@@ -38,6 +38,8 @@ const PLAYER_MOVEMENT: i32 = 4;
 const BULLET_EXPLOSION_TIME: u64 = 24;
 
 const PLAYER_DIED_DURATION: Time = Duration::from_millis(1000);
+const NEXT_LEVEL_DURATION: Time = Duration::from_millis(500);
+const GAME_OVER_DURATION: Time = Duration::from_millis(2000);
 
 const ALIEN_INITIAL_SPEED: i32 = 2;
 const ALIEN_SWARM_INITIAL_SPEED: Time = Duration::from_millis(120);
@@ -114,6 +116,9 @@ pub struct World {
     /// score text stuff
     score_text: Score,
 
+    /// game over text
+    game_over: GameOver,
+
     /// current level,
     current_level: u32,
 
@@ -131,6 +136,12 @@ pub struct World {
 
     /// has player died
     player_died: bool,
+
+    /// gameover timer, used to delay when player has losted and going back to new game screen
+    game_over_timer: Timer,
+
+    /// next level timer, used to delay next level
+    next_level_timer: Timer,
 
     /// shield bullet explosion mask
     shield_bullet_explosion_mask: SpriteMask,
@@ -191,6 +202,7 @@ impl World {
         splash: Sprite,
         digits: Digits,
         score_text: Score,
+        game_over: GameOver,
         high_score: u32,
         shield_bullet_explosion_mask: SpriteMask,
         player_bullet_explosion: Sprite,
@@ -245,12 +257,15 @@ impl World {
             splash,
             digits,
             score_text,
+            game_over,
             high_score,
             current_level: 1,
             player_bullet_explosion,
             player_explosion,
             player_died_timer: Timer::new(PLAYER_DIED_DURATION),
             player_died: false,
+            game_over_timer: Timer::new(GAME_OVER_DURATION),
+            next_level_timer: Timer::new(NEXT_LEVEL_DURATION),
             shield_bullet_explosion_mask,
             alien_bullet_explosion,
             player_alien_bullet_explosion,
@@ -408,6 +423,26 @@ impl World {
     #[inline]
     pub fn reset_player_died_timer(&mut self) {
         self.player_died_timer.reset()
+    }
+
+    #[inline]
+    pub fn has_game_over_timer_expired(&self) -> bool {
+        self.game_over_timer.has_expired()
+    }
+
+    #[inline]
+    pub fn reset_game_over_timer(&mut self) {
+        self.game_over_timer.reset()
+    }
+
+    #[inline]
+    pub fn has_next_level_timer_expired(&self) -> bool {
+        self.game_over_timer.has_expired()
+    }
+
+    #[inline]
+    pub fn reset_next_level_timer(&mut self) {
+        self.game_over_timer.reset()
     }
 
     /// returns the ground rect for drawing and colision
@@ -1029,6 +1064,9 @@ pub fn initial_world_state(config: &Config) -> World {
     // load text
     let digits = Digits::new(&sheet_json);
 
+    // animation text for game over screen
+    let game_over = GameOver::new(&sheet_json);
+
     // load text
     let score_text = Score::new(&sheet_json);
 
@@ -1040,6 +1078,7 @@ pub fn initial_world_state(config: &Config) -> World {
         splash_sprite,
         digits,
         score_text,
+        game_over,
         config.get_high_score(),
         shield_bullet_explosion_mask,
         player_bullet_explosion_sprite,

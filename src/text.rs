@@ -108,6 +108,59 @@ impl Digits {
     }
 }
 
+/// Text for game over animation
+#[derive(Debug, Clone)]
+pub struct GameOver {
+    game_over: Vec<Sprite>,
+    index: usize,
+}
+
+impl GameOver {
+    /// create a gameover text instance
+    pub fn new(sheet_json: &SheetJSON) -> Self {
+        
+        let mut game_over = Vec::new();
+
+        let l = sheet_json.frames.get("letter_g.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_a.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_m.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_e.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_o.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_v.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_e.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+        let l = sheet_json.frames.get("letter_r.png").unwrap();
+        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
+
+        Self {
+            game_over,
+            index: 0,
+        }
+    }
+
+    #[inline]
+    pub fn start(&mut self) {
+        self.index = 0;
+    }
+
+    #[inline]
+    pub fn next_letter(&mut self) {
+        self.index += 1;
+    } 
+
+    #[inline]
+    pub fn render<'a>(&self, pos: Point, sheet: &SpriteSheet, frame: &mut Frame<'a>) {
+        
+    }
+}
+
+/// text for player and high scores, plus credits
 #[derive(Debug, Clone)]
 pub struct Score {
     pub score: Sprite,

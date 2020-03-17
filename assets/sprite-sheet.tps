@@ -355,6 +355,37 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">letter_a.png</key>
+            <key type="filename">letter_e.png</key>
+            <key type="filename">letter_g.png</key>
+            <key type="filename">letter_m.png</key>
+            <key type="filename">letter_o.png</key>
+            <key type="filename">letter_r.png</key>
+            <key type="filename">letter_v.png</key>
+            <key type="filename">text_0.png</key>
+            <key type="filename">text_1.png</key>
+            <key type="filename">text_2.png</key>
+            <key type="filename">text_3.png</key>
+            <key type="filename">text_4.png</key>
+            <key type="filename">text_5.png</key>
+            <key type="filename">text_6.png</key>
+            <key type="filename">text_7.png</key>
+            <key type="filename">text_8.png</key>
+            <key type="filename">text_9.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,4,5,7</rect>
+                <key>scale9Paddings</key>
+                <rect>3,4,5,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">player_bullet.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -462,30 +493,6 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">text_0.png</key>
-            <key type="filename">text_1.png</key>
-            <key type="filename">text_2.png</key>
-            <key type="filename">text_3.png</key>
-            <key type="filename">text_4.png</key>
-            <key type="filename">text_5.png</key>
-            <key type="filename">text_6.png</key>
-            <key type="filename">text_7.png</key>
-            <key type="filename">text_8.png</key>
-            <key type="filename">text_9.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>spriteScale</key>
-                <double>1</double>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>3,4,5,7</rect>
-                <key>scale9Paddings</key>
-                <rect>3,4,5,7</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
         </map>
         <key>fileList</key>
         <array>
@@ -528,6 +535,13 @@
             <filename>splash.png</filename>
             <filename>bullet_barrier_mask.png</filename>
             <filename>player_bullet_small.png</filename>
+            <filename>letter_a.png</filename>
+            <filename>letter_e.png</filename>
+            <filename>letter_g.png</filename>
+            <filename>letter_m.png</filename>
+            <filename>letter_o.png</filename>
+            <filename>letter_v.png</filename>
+            <filename>letter_r.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
