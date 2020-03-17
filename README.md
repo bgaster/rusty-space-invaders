@@ -24,6 +24,7 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 - [ ] UFOs
    - [x] Design Sprite
    - [ ] Implement in game
+- [x] Gamepad support
 - [x] Barriers
    - [x] Sprites
    - [x] Basic Renderering
@@ -43,6 +44,8 @@ It is worth noting that the main goal of the project is to port it to the 32blit
       - [x] Ableton to generate 80, 100, 120, and so BPM loops for different speed of alien swarms
       - [x] Intergrate music into game
       - [ ] Change music tempo when aliens die
+- [ ] Port to Raspberry Pi
+   - [ ] Raylib backend
 - [x] Push to git hub
 
 ## Rust

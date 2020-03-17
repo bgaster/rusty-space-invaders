@@ -8,7 +8,6 @@
 extern crate rodio;
 
 use std::sync::Arc;
-use std::fs::File;
 use std::io::Read;
 use std::io;
 use rodio::{Device, Sink, Source};
@@ -113,6 +112,7 @@ impl Sound {
         let device = rodio::default_output_device().unwrap();
         let player_explosion_sink = Sink::new(&device);
         let player_shot_sink = Sink::new(&device);
+        
         let alien_explosion_sink = Sink::new(&device);
 
         for s in music {
@@ -126,6 +126,12 @@ impl Sound {
             music_sink.pause();
             music_sinks.push(music_sink);
         }
+
+        // lower the sounds of effects, compared to the music
+        // should really do this in ableton
+        player_shot_sink.set_volume(0.1);
+        alien_explosion_sink.set_volume(0.1);
+        player_explosion_sink.set_volume(0.1);
 
         Sound {
             // TODO: check devices and so on
@@ -151,12 +157,14 @@ impl Sound {
     /// * `index`: index of music to play
     pub fn play_music(&mut self, bpm: usize) {
         // force to be inbounds, avoiding any panics
-        let bpm = bpm % self.music_sink.len();
-        self.music_sink[self.current_bpm].pause();
-        self.music_sink[bpm].play();
-        self.current_bpm = bpm;
+        if bpm < self.music_sink.len() {
+            self.music_sink[self.current_bpm].pause();
+            self.music_sink[bpm].play();
+            self.current_bpm = bpm;
+        }
     }
 
+    /// returns the number of different music speed variants
     pub fn number_of_music_variants(&self) -> usize {
         self.music_sink.len()
     }
@@ -184,5 +192,6 @@ impl Sound {
     pub fn play_alien_explosion(&self) {
             let sound = rodio::Decoder::new(self.alien_explosion_data.clone()).unwrap();
             self.alien_explosion_sink.append(sound);
+            
     }
 }

@@ -6,15 +6,19 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+use-raylib = ["raylib"]
+
 [dependencies]
 pixels = "0.0.2"
-winit = "0.20.0"
-winit_input_helper = "0.4.0"
-gilrs = "0.7.3"
-serde_json = "1.0.46"
+winit = "0.21.0"
+winit_input_helper = "0.5.0"
+gilrs = { path = "external/gilrs/gilrs" }
+serde_json = "1.0.48"
 serde = "1.0.104"
 serde_derive = "1.0.104"
-image = "0.22.4"
+image = "0.23.0"
 env_logger = "0.7"
 log = "0.4"
 euclid = "0.20.7"
@@ -24,3 +28,4 @@ either = "1.5.3"
 rand = "0.7.3"
 rodio = "0.10.0"
 confy = "0.3.1"
+raylib = { git = "https://github.com/deltaphc/raylib-rs", branch = "master", optional = true }

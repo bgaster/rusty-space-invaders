@@ -159,13 +159,14 @@ impl Sprite {
                 // check mask not 0 
                 // NOTE: no need to check alpha channel, as mask would be zero in that case
                 if mask[sy as usize][sx as usize] != 0 { 
+                    frame.put_pixel(px, py, rgba);
                     // clip if necessary
-                    if  px < frame.width*4 && py < frame.height*4 {
-                        frame.frame[(px+py*frame.width*4) as usize]   = rgba[0];
-                        frame.frame[(px+1+py*frame.width*4) as usize] = rgba[1];
-                        frame.frame[(px+2+py*frame.width*4) as usize] = rgba[2];
-                        frame.frame[(px+3+py*frame.width*4) as usize] = rgba[3];
-                    } 
+                    // if  px < frame.width*4 && py < frame.height*4 {
+                    //     frame.frame[(px+py*frame.width*4) as usize]   = rgba[0];
+                    //     frame.frame[(px+1+py*frame.width*4) as usize] = rgba[1];
+                    //     frame.frame[(px+2+py*frame.width*4) as usize] = rgba[2];
+                    //     frame.frame[(px+3+py*frame.width*4) as usize] = rgba[3];
+                    // } 
                     //}
                 }
                 px += 4;
@@ -185,23 +186,23 @@ impl Sprite {
                 let Rgba(rgba) = sheet.texture.get_pixel(sx+self.x,sy+self.y);
                 // todo: ADD BLENDING MODE
                 if rgba[3] != 0 { // check alpha channel not 0
-                    
+                    frame.put_pixel(px, py, rgba);
                     //else {
                     // clip if necessary
-                    if  px < frame.width*4 && py < frame.height*4 {
-                        // if rgba[0] == 0xe9 && rgba[1] == 0x1e && rgba[2] == 0x1e {
-                        //     println!("0xED {}", rgba[3]);
-                        //     // frame.frame[(px+py*frame.width*4) as usize]   = 0xFF;
-                        //     // frame.frame[(px+1+py*frame.width*4) as usize] = 0xFF;
-                        //     // frame.frame[(px+2+py*frame.width*4) as usize] = 0x0;
-                        //     // frame.frame[(px+3+py*frame.width*4) as usize] = 0x0;
-                        // }
+                    // if  px < frame.width*4 && py < frame.height*4 {
+                    //     // if rgba[0] == 0xe9 && rgba[1] == 0x1e && rgba[2] == 0x1e {
+                    //     //     println!("0xED {}", rgba[3]);
+                    //     //     // frame.frame[(px+py*frame.width*4) as usize]   = 0xFF;
+                    //     //     // frame.frame[(px+1+py*frame.width*4) as usize] = 0xFF;
+                    //     //     // frame.frame[(px+2+py*frame.width*4) as usize] = 0x0;
+                    //     //     // frame.frame[(px+3+py*frame.width*4) as usize] = 0x0;
+                    //     // }
 
-                        frame.frame[(px+py*frame.width*4) as usize]   = rgba[0];
-                        frame.frame[(px+1+py*frame.width*4) as usize] = rgba[1];
-                        frame.frame[(px+2+py*frame.width*4) as usize] = rgba[2];
-                        frame.frame[(px+3+py*frame.width*4) as usize] = rgba[3];
-                    } 
+                    //     frame.frame[(px+py*frame.width*4) as usize]   = rgba[0];
+                    //     frame.frame[(px+1+py*frame.width*4) as usize] = rgba[1];
+                    //     frame.frame[(px+2+py*frame.width*4) as usize] = rgba[2];
+                    //     frame.frame[(px+3+py*frame.width*4) as usize] = rgba[3];
+                    // } 
                     //}
                 }
                 px += 4;

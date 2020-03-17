@@ -344,6 +344,11 @@ pub fn bullet_collision_system(world: &mut World) {
             //*world.get_mut_alien_swarm_speed() -= Duration::from_millis(9);
             *world.get_mut_alien_speed() += 3;
         }
+        
+        // check if music tempo should be increased
+        if world.get_alien_dead() % world.get_sound().number_of_music_variants() as i32 == 0 {
+            world.set_current_bpm(world.get_current_bpm()+1);
+        }
 
         let mut updated_score = 0;
         if let Some(entity) = world.get_mut_entity(world.get_player()) {

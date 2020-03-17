@@ -100,6 +100,9 @@ pub struct World {
     /// sounds
     sound: Sound,
 
+    /// current music bpm index
+    current_bpm: usize,
+
     /// sprite sheet for all sprites in game
     sprite_sheet: SpriteSheet,
     
@@ -205,6 +208,7 @@ impl World {
         alien_ens: Vec<Entity>, 
         ship: Entity) -> Self {
 
+        // add player, UFO, and alien bullet entities 
         let mut entities = vec![
             None, 
             Some(player), 
@@ -216,23 +220,27 @@ impl World {
         let alien_bullet2 = 4;
         let alien_bullet3 = 5;
 
+        // add barrier entities
         let mut barriers = vec![];
         for b in barriers_ens.iter() {
             entities.push(Some((*b).clone()));
             barriers.push(entities.len()-1);
         }
 
+        // add alien entities
         let mut aliens = vec![];
         for a in alien_ens.iter() {
             entities.push(Some((*a).clone()));
             aliens.push(entities.len()-1);
         }
 
+        // create the world
         World {
             current_state: GameState::Splash,
             rng: Box::new(rand::thread_rng()),
             internal_rect,
             sound,
+            current_bpm: 0,
             sprite_sheet,
             splash,
             digits,
@@ -269,6 +277,16 @@ impl World {
             explosions: vec![],
             ship,
         }
+    }
+
+    #[inline]
+    pub fn get_current_bpm(&self) -> usize {
+        self.current_bpm
+    }
+
+    #[inline]
+    pub fn set_current_bpm(&mut self, bpm: usize)  {
+        self.current_bpm = bpm;
     }
 
     #[inline]
@@ -322,6 +340,11 @@ impl World {
     #[inline]
     pub fn play_player_explosion(&self) {
         self.sound.play_player_explosion();
+    }
+
+    #[inline]
+    pub fn get_sound(&self) -> &Sound {
+        &self.sound
     }
 
     #[inline]
@@ -1116,6 +1139,8 @@ pub fn reset_aliens(round: u32, world: &mut World) {
 
     // clear number of alien dead
     world.reset_alien_dead();
+    // set music back to lowest tempo
+    world.set_current_bpm(0);
 
     // set the top left position of swarm
     let alien_swarm_position = Point::new(

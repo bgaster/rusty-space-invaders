@@ -22,6 +22,7 @@
 
 // #![deny(clippy::all)]
 #![forbid(unsafe_code)]
+#![allow(non_snake_case)]
 
 #[macro_use]
 extern crate serde_derive;
@@ -39,9 +40,6 @@ extern crate image;
 extern crate line_drawing;
 
 extern crate rand;
-
-use pixels::{Error};
-use winit::event_loop::{ControlFlow};
 
 mod sprite_sheet;
 mod frame;
@@ -79,7 +77,7 @@ use config::*;
 /// Entry point for space invaders
 /// 
 /// Creates the hardware interface, populates the game world, and then enters the game loop
-fn main() -> Result<(), Error> {
+fn main() {
     env_logger::init();
 
     // create the hardware interface ... wgpu/pixels on desktop and 32bit for STM hardware (TODO)
@@ -97,6 +95,9 @@ fn main() -> Result<(), Error> {
 
         // do we need to update the display
         if interface.render(&event) {
+            // begin rendering, need by some backends
+            interface.begin_draw();
+
             // render game if playing or paused
             if  current_state == GameState::Playing || current_state == GameState::Paused {
                 renderer_system(&world, &mut interface);
@@ -109,6 +110,9 @@ fn main() -> Result<(), Error> {
             else if current_state == GameState::Splash {
                 renderer_splash(&world, &mut interface);
             }
+
+            // end redering, need to close drawing surfaces on some backends
+            interface.end_draw();
         }
 
         let (should_exit, controls) = interface.handle_input(event);        
@@ -124,7 +128,7 @@ fn main() -> Result<(), Error> {
         
         // handle the state when game is in full swing
         if  current_state == GameState::Playing {
-            world.play_music(0);
+            world.play_music(world.get_current_bpm());
             // handle updates for player, alien, and ship components
             player_control_system(&mut world, controls);
             // handle movment update for all types of bullets

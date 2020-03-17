@@ -1,0 +1,214 @@
+// Description: 
+// 
+//  Simple implementation of interface that uses the framebuffer crate Pixels. This is platform specific in its
+//  dependency on Pixels, which as it uses wgpu does not work on Raspberry Pi 3 or 32Blit, for example. It is 
+//  included directly through interface.rs, when the desktop feature is enabled.
+// 
+// Copyright © 2020 Benedict Gaster. All rights reserved.
+
+use winit::dpi::LogicalSize;
+use winit::event::{Event, VirtualKeyCode, WindowEvent};
+use winit::event_loop::{EventLoop};
+pub use winit::event_loop::{ControlFlow};
+use winit::window::{WindowBuilder, Window};
+use winit_input_helper::WinitInputHelper;
+use gilrs::{Button, Gilrs,EventType, Gamepad, GamepadId};
+use pixels::{wgpu::Surface, Pixels, SurfaceTexture};
+//pub use pixels::{Error};
+use crate::controls::*;
+use crate::frame::*;
+
+const WIDTH: u32 = 480;
+const HEIGHT: u32 = 460;
+
+pub struct Interface {
+    window: Window,
+    hidpi_factor: f64,
+    input: WinitInputHelper,
+    gilrs: Gilrs,
+    gamepad: Option<GamepadId>,
+    pixels: Pixels,
+}
+
+impl Interface {
+    pub fn request_redraw(&self) {
+        self.window.request_redraw();
+    }
+
+    pub fn handle_input<'a>(&mut self, event: Event<'a, ()>) -> (bool, Option<Controls>) {
+
+        // handle any redraw events (TODO: not sure this makes sense here!!)
+
+        // Pump the gilrs event loop and find an active gamepad
+        while let Some(gilrs::Event { id, event, time }) = self.gilrs.next_event() {
+            //println!("{:?} New event from {}: {:?}", time, id, event);
+            //let pad = self.gilrs.gamepad(id);
+            if self.gamepad.is_none() {
+                self.gamepad = Some(id);
+            } else if event == gilrs::ev::EventType::Disconnected {
+                self.gamepad = None;
+            }
+        }
+
+        // while let Some(ev) = self.gilrs.next_event() {
+        //     // unwrap() should never panic because we use id from event
+        //     let is_up_pressed = self.gilrs.gamepad(ev.id).is_pressed(Button::DPadUp);
+
+        //     println!("time");
+        //     match ev.event {
+        //         EventType::ButtonPressed(Button::South, _) if is_up_pressed => {
+        //             // do something…
+        //         }
+        //         _ => (),
+        //     }
+        // }
+
+        if self.input.update(event) {
+            if self.input.key_pressed(VirtualKeyCode::Escape) || self.input.quit() {
+                (true, None)
+            }
+            else {
+                let controls = {
+                    // Keyboard controls
+                    let mut left = self.input.key_held(VirtualKeyCode::Left);
+                    let mut right = self.input.key_held(VirtualKeyCode::Right);
+                    let mut fire = self.input.key_pressed(VirtualKeyCode::Space);
+
+                     // Gamepad controls
+                    if let Some(id) = self.gamepad {
+                        let gamepad = self.gilrs.gamepad(id);
+
+                        // stick controls
+                        if let Some(axis_data) = gamepad.axis_data(gilrs::Axis::LeftStickX) {
+                            if axis_data.value() == -1.0 {
+                                left = true;
+                            }
+                            else if axis_data.value() == 1.0 {
+                                right = true;
+                            }
+                        }
+
+                        // dpad
+                        left = left || gamepad.is_pressed(Button::DPadLeft);
+                        right = right || gamepad.is_pressed(Button::DPadRight);
+                        fire = fire
+                            || gamepad.button_data(Button::North).map_or(false, |button| {
+                                button.is_pressed() && button.counter() == self.gilrs.counter()
+                            });
+                        fire = fire
+                            || gamepad.button_data(Button::South).map_or(false, |button| {
+                                button.is_pressed() && button.counter() == self.gilrs.counter()
+                            });
+                    }
+
+                    let direction = if left {
+                        Direction::Left
+                    } else if right {
+                        Direction::Right
+                    } else {
+                        Direction::Still
+                    };
+
+                    Controls { direction, fire }
+                };
+        
+                // Adjust high DPI factor
+                if let Some(factor) = self.input.scale_factor_changed() {
+                    self.hidpi_factor = factor;
+                }
+        
+                // Resize the window
+                if let Some(size) = self.input.window_resized() {
+                    //let size = size.to_physical(hidpi_factor);
+                    let width = size.width; // .round() as u32;
+                    let height = size.height; //.round() as u32;
+
+                    self.pixels.resize(width, height);
+                }
+
+                (false, Some(controls))
+            }
+        }
+        else {
+            (false, None)
+        }
+    }
+    
+    /// begin drawing to framebuffer
+    pub fn begin_draw(&self) {
+
+    }
+
+    /// return framebuffer
+    pub fn framebuffer(&mut self) -> Frame {
+        let p = self.pixels.get_frame();
+        Frame::new(p, Interface::get_width(), Interface::get_height())
+    }
+
+    /// end drawing to framebuffer
+    pub fn end_draw(&self) {
+
+    }
+
+    pub fn clear_framebuffer(&mut self, color: [u8;4]) {
+        let fb = self.pixels.get_frame();
+
+        for pixel in fb.chunks_exact_mut(4) {
+            pixel.copy_from_slice(&color);
+        }
+    }
+
+    pub fn render<'a>(&self, event: &Event<'a, ()>)-> bool {
+        if let Event::RedrawRequested(_) = event {
+            return true;
+        }
+        false
+    }
+
+    pub fn draw_call(&mut self) {
+        self.pixels.render();
+    }
+
+    #[inline]
+    pub fn get_width() -> u32 {
+        WIDTH
+    }
+
+    #[inline]
+    pub fn get_height() -> u32 {
+        HEIGHT
+    }
+}
+
+pub fn create_interface(title: &str) -> (EventLoop<()>, Interface) { 
+        let event_loop = EventLoop::new();
+            let input = WinitInputHelper::new();
+            let window = {
+                let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
+                WindowBuilder::new()
+                    .with_title(title)
+                    .with_inner_size(size)
+                    .with_min_inner_size(size)
+                    .build(&event_loop)
+                    .unwrap()
+            };
+        let hidpi_factor = window.scale_factor();
+
+        let pixels = {
+            let surface = Surface::create(&window);
+            let surface_texture = SurfaceTexture::new(WIDTH, HEIGHT, surface);
+            Pixels::new(WIDTH, HEIGHT, surface_texture).unwrap()
+        };
+
+        let gilrs = Gilrs::new().unwrap();
+
+        (event_loop,
+         Interface {
+            window,
+            hidpi_factor,
+            input,
+            gilrs,
+            gamepad: None,
+            pixels,
+         })
+}

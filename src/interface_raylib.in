@@ -1,0 +1,164 @@
+
+use std::{fmt};
+use raylib::core::{RaylibHandle, RaylibThread};
+use raylib::prelude::*;
+use raylib::prelude::GamepadNumber::*;
+
+use crate::controls::*;
+use crate::frame::*;
+
+const WIDTH: u32 = 480;
+const HEIGHT: u32 = 460;
+
+//-----------------------------------------------------------------------------
+// provide a very simple interface for event loop that looks like a tiny subset 
+// of winit, used from main. This simply calls out to raylib for its semantics.
+// 
+// This is probably not the best way to do all this, but we only need it as we started out
+// with winit, but this all failed to work as hoped on Raspberry Pi when compbined with 
+// Raylib.
+
+#[derive(Debug, PartialEq)]
+pub enum Event<'a, T: 'static> {
+    SomeEvent,
+    _marker(::std::marker::PhantomData<&'a mut T>)
+}
+
+pub struct EventLoop<T: 'static> {
+    pub(crate) _marker: ::std::marker::PhantomData<T>, // Not Send nor Sync
+}
+
+pub struct EventLoopWindowTarget<T: 'static> {
+    pub(crate) _marker: ::std::marker::PhantomData<T>, // Not Send nor Sync
+}
+
+impl<T> fmt::Debug for EventLoop<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.pad("EventLoop { .. }")
+    }
+}
+
+impl<T> fmt::Debug for EventLoopWindowTarget<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.pad("EventLoopWindowTarget { .. }")
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum ControlFlow {
+    /// When the current loop iteration finishes, immediately begin a new iteration regardless of
+    /// whether or not new events are available to process.
+    Poll,
+    /// When the current loop iteration finishes, suspend the thread until another event arrives.
+    Wait,
+     /// Send a `LoopDestroyed` event and stop the event loop. This variant is *sticky* - once set,
+    /// `control_flow` cannot be changed from `Exit`, and any future attempts to do so will result
+    /// in the `control_flow` parameter being reset to `Exit`.
+    Exit,
+}
+
+impl Default for ControlFlow {
+    #[inline(always)]
+    fn default() -> ControlFlow {
+        ControlFlow::Poll
+    }
+}
+
+impl<T> EventLoop<T> {
+    #[inline]
+    pub fn run<F>(self, mut event_handler: F) -> ()
+    where
+        F: 'static + FnMut(Event<'_, T>, &EventLoopWindowTarget<T>, &mut ControlFlow),
+    {
+        let mut control_flow = ControlFlow::Poll;
+        while control_flow != ControlFlow::Exit {
+            event_handler(
+                Event::SomeEvent, 
+                &EventLoopWindowTarget { _marker: ::std::marker::PhantomData,},
+                &mut control_flow);
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+
+pub struct Interface {
+    rl: RaylibHandle,
+    rt: RaylibThread,
+}
+
+impl Interface {
+    pub fn request_redraw(&self) {
+    }
+
+    pub fn handle_input<'a>(&mut self, event: Event<'a, ()>) -> (bool, Option<Controls>) {
+        let exit = self.rl.is_key_down(KeyboardKey::KEY_ESCAPE);
+        
+        //println!("exit {:?}", self.rl.get_key_pressed());
+        (exit, None)
+    }
+
+    /// begin drawing to framebuffer
+    pub fn begin_draw(&mut self) {
+        let mut d = self.rl.begin_drawing(&self.rt);
+        
+        if d.is_gamepad_available(GAMEPAD_PLAYER1 as u32) {
+            d.draw_text(
+                &format!("GP1: {:?}", d.get_gamepad_name(GAMEPAD_PLAYER1 as u32).unwrap()),
+                10,
+                10,
+                10,
+                Color::BLACK,
+            );
+        }
+        d.clear_background(Color::WHITE);
+        d.draw_text("Hello, world!", 12, 20, 20, Color::BLACK);
+    }
+
+    /// return framebuffer
+    pub fn framebuffer(&mut self) -> Frame {
+        Frame::new(Interface::get_width(), Interface::get_height())
+    }
+
+    /// end drawing to framebuffer
+    pub fn end_draw(&mut self) {
+    }
+
+    pub fn clear_framebuffer(&mut self, color: [u8;4]) {
+    }
+
+    pub fn render<'a>(&mut self, event: &Event<'a, ()>)-> bool {
+        true
+    }
+
+    pub fn draw_call(&mut self) {
+    }
+
+    #[inline]
+    pub fn get_width() -> u32 {
+        WIDTH
+    }
+
+    #[inline]
+    pub fn get_height() -> u32 {
+        HEIGHT
+    }
+}
+
+pub fn create_interface(title: &str) -> (EventLoop<()>, Interface) { 
+    let (mut rl, rt) = raylib::init()
+        .size(Interface::get_width() as i32, Interface::get_height() as i32)
+        .title(title)
+        .build();
+
+    rl.set_target_fps(60);
+
+    (EventLoop {
+        _marker: ::std::marker::PhantomData,
+     }, 
+     Interface {
+        rl,
+        rt
+     })
+}

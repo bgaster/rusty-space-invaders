@@ -21,13 +21,8 @@ use crate::text::*;
 pub fn renderer_splash(world: &World, interface: &mut Interface) {
     // we don't really need this as it is a full screen splash, but anyway
     interface.clear_framebuffer([0x00,0x00,0x00,0xFF]);
-        
-    let p = interface.pixels.get_frame();
-    let mut frame = Frame {
-        frame: p,
-        width: Interface::get_width(),
-        height: Interface::get_height(),
-    };
+
+    let mut frame = interface.framebuffer();
 
     let sheet = world.get_sprite_sheet();
 
@@ -46,12 +41,9 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
 
     interface.clear_framebuffer([0x0,0x0,0x0,0xFF]);
         
-    let p = interface.pixels.get_frame();
-    let mut frame = Frame {
-        frame: p,
-        width: Interface::get_width(),
-        height: Interface::get_height(),
-    };
+    // let p = interface.pixels.get_frame();
+    // let mut frame = Frame::new(p, Interface::get_width(), Interface::get_height());
+    let mut frame = interface.framebuffer();
 
     // get ref to sprite sheet used to render sprites and animations
     let sheet = world.get_sprite_sheet();
@@ -182,7 +174,7 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
     fill_rect(
         World::get_ground(), 
         [0x28, 0xcf, 0x28, 0xFF], 
-        frame.frame );
+        &mut frame );
 
     interface.draw_call();
 }
@@ -190,7 +182,7 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
 // utility functions
 
 /// Draw a line to the pixel buffer using Bresenham's algorithm.
-pub fn line(p1: Point, p2: Point, color: [u8; 4], screen: &mut [u8]) {
+pub fn line(p1: Point, p2: Point, colour: [u8; 4], screen: &mut Frame) {
     let p1 = (p1.x as i64, p1.y as i64);
     let p2 = (p2.x as i64, p2.y as i64);
 
@@ -199,12 +191,13 @@ pub fn line(p1: Point, p2: Point, color: [u8; 4], screen: &mut [u8]) {
         let y = min(y as usize, Interface::get_height() as usize - 1);
         let i = x * 4 + y * Interface::get_width() as usize * 4;
 
-        screen[i..i + 4].copy_from_slice(&color);
+        //screen[i..i + 4].copy_from_slice(&color);
+        screen.put_pixel(x as u32 * 4, y as u32, &colour);
     }
 }
 
 /// Draw a rectangle to the pixel buffer using two points in opposite corners.
-pub fn rect(p1: Point, p2: Point, color: [u8; 4], screen: &mut [u8]) {
+pub fn rect(p1: Point, p2: Point, color: [u8; 4], screen: &mut Frame) {
     let p2 = Point::new(p2.x - 1, p2.y - 1);
     let p3 = Point::new(p1.x, p2.y);
     let p4 = Point::new(p2.x, p1.y);
@@ -216,7 +209,7 @@ pub fn rect(p1: Point, p2: Point, color: [u8; 4], screen: &mut [u8]) {
 }
 
 
-pub fn fill_rect(rect: Rect, color: [u8; 4], screen: &mut [u8]) {
+pub fn fill_rect(rect: Rect, color: [u8; 4], screen: &mut Frame) {
     for y in 0..=rect.height() {
         line(Point::new(rect.min_x(), rect.min_y() + y), Point::new(rect.max_x(), rect.min_y() + y), color, screen);
     }
