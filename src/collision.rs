@@ -214,6 +214,34 @@ pub fn bullet_collision_system(world: &mut World) {
         }
     } 
 
+    // now handle ufo and player bullet
+    let mut ufo_points = 0;
+    if player_bullet_in_flight && !player_bullet_killed {
+        if let Some(entity) = world.get_mut_entity(world.get_ship()) {
+            if let Entity::Ship(ship) = entity {
+                if ship.is_alive {
+                    let bounding_box = ship.get_bounding_box();
+                    if bounding_box.intersects(&player_bullet_bounding_box) {
+                        ship.is_alive = false;
+                        ufo_points = ship.points;
+                    }
+                }
+            }
+        }
+    }
+
+    // if the UFO was hit by player, reset
+    if ufo_points > 0 {
+        world.reset_ufo_timer();
+        world.pause_ufo();
+        // add ufo points to players score 
+        if let Some(entity) = world.get_mut_entity(world.get_player()) {
+            if let Entity::Player(player) = entity {
+                player.score += ufo_points;
+            }
+        }
+    }
+
     // now handle a player death
     if player_killed || player_bullet_killed {
         if let Some(entity) = world.get_mut_entity(world.get_player()) {

@@ -86,6 +86,8 @@ pub struct Sound {
     alien_explosion_sink: Sink,
     /// sink for player bullet
     player_shot_sink: Sink,
+    /// ufo sink
+    ufo_sink: Sink,
     /// sink for playing sound track
     music_sink: Vec<Sink>,
     current_bpm: usize,
@@ -101,6 +103,7 @@ impl Sound {
         player_shot: &str,
         player_explosion: &str,
         alien_explosion: &str,
+        ufo_effect: &str,
         music: Vec<&str>) -> Self{
 
         let player_shot = SoundData::new(player_shot);
@@ -114,6 +117,15 @@ impl Sound {
         let player_shot_sink = Sink::new(&device);
         
         let alien_explosion_sink = Sink::new(&device);
+        
+        // for the ufo we simply play the same sound looped, while on screen
+        let ufo_effect = SoundData::new(ufo_effect);
+        let ufo_sink = Sink::new(&device);
+        let effect = rodio::Decoder::new(io::Cursor::new(ufo_effect)).unwrap()
+                .repeat_infinite().
+                speed(1.0);
+        ufo_sink.append(effect);
+        ufo_sink.pause();
 
         for s in music {
             let music = SoundData::new(s);
@@ -132,6 +144,7 @@ impl Sound {
         player_shot_sink.set_volume(0.1);
         alien_explosion_sink.set_volume(0.1);
         player_explosion_sink.set_volume(0.1);
+        ufo_sink.set_volume(0.1);
 
         Sound {
             // TODO: check devices and so on
@@ -139,6 +152,7 @@ impl Sound {
             player_explosion_sink,
             alien_explosion_sink,
             player_shot_sink,
+            ufo_sink,
             music_sink: music_sinks,
             current_bpm: 0,
             player_shot_data: io::Cursor::new(player_shot),
@@ -193,5 +207,15 @@ impl Sound {
             let sound = rodio::Decoder::new(self.alien_explosion_data.clone()).unwrap();
             self.alien_explosion_sink.append(sound);
             
+    }
+
+    /// play sound for player's explosion
+    pub fn play_ufo(&self) {
+        self.ufo_sink.play();    
+    }
+
+    /// pause ufo effect if playing, if not playing nothing is changed
+    pub fn pause_ufo(&self) {
+        self.ufo_sink.pause();
     }
 }

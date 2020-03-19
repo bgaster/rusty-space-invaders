@@ -34,4 +34,8 @@ impl Timer {
     pub fn has_expired(&self) -> bool {
         Instant::now() - self.start >= self.duration 
     }
+
+    pub fn set_duration(&mut self, duration: Duration) {
+        self.duration = duration;
+    }
 }

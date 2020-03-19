@@ -232,21 +232,40 @@ impl Alien {
 pub struct Ship {
     /// screen position of ship
     pub position: Point,
+    /// sprite drawn for the ship
     pub sprite: Sprite,
+    /// ships bounding box
+    pub bounding_box: Rect,
+    /// when ship is shot this is the additional points the player receives 
     pub points: i32,
+    /// is ship alive and on screen?
     pub is_alive: bool,
 }
 
 impl Ship {
     pub fn new(       
         position: Point, 
+        bounding_box: Rect,
         sprite: Sprite) -> Self {
         Ship {
             position,
             sprite,
-            points: 0, // this randomly generated at generation time
+            bounding_box,
+            points: 100, // this randomly generated at generation time
             is_alive: false,
         }
+    }
+
+    /// set the score for the next ship hit
+    pub fn set_points(&mut self, points: i32) {
+        self.points = points;
+    }
+
+    pub fn get_bounding_box(&self) -> Rect {
+        // TODO: resolve the *4 hack!!
+        Rect::new(
+            self.position,
+            Size::new(self.bounding_box.size.width*4,self.bounding_box.size.height))
     }
 }
 

@@ -7,7 +7,7 @@
 
 use std::time::{Duration, Instant};
 use either::*;
-use rand::{RngCore};
+use rand::{RngCore, Rng, thread_rng};
 
 use crate::sprite_sheet::{SpriteSheet, SheetJSON, AnimationJSON, Sprite, SpriteMask};
 use crate::entity::*;
@@ -35,11 +35,19 @@ const NUMBER_ALIENS: usize = NUMBER_ALIEN_COLUMNS * NUMBER_ALIEN_ROWS;
 const PLAYER_BULLET_SPEED: i32 = 6;
 const PLAYER_MOVEMENT: i32 = 4;
 
+const SHIP_MOVEMENT: u32 = 2;
+
 const BULLET_EXPLOSION_TIME: u64 = 24;
 
 const PLAYER_DIED_DURATION: Time = Duration::from_millis(1000);
 const NEXT_LEVEL_DURATION: Time = Duration::from_millis(500);
 const GAME_OVER_DURATION: Time = Duration::from_millis(2000);
+
+const MIN_UFO_TIMER_DURATION: u64 = 6;
+const MAX_UFO_TIMER_DURATION: u64 = 20;
+
+pub const UFO_START_X_START_POSITION: u32 = 50;
+pub const UFO_START_Y_START_POSITION: u32 = 55;
 
 const ALIEN_INITIAL_SPEED: i32 = 2;
 const ALIEN_SWARM_INITIAL_SPEED: Time = Duration::from_millis(120);
@@ -142,6 +150,9 @@ pub struct World {
 
     /// next level timer, used to delay next level
     next_level_timer: Timer,
+
+    /// when is the next ufo to enter the play
+    ufo_timer: Timer,
 
     /// shield bullet explosion mask
     shield_bullet_explosion_mask: SpriteMask,
@@ -266,6 +277,7 @@ impl World {
             player_died: false,
             game_over_timer: Timer::new(GAME_OVER_DURATION),
             next_level_timer: Timer::new(NEXT_LEVEL_DURATION),
+            ufo_timer: Timer::new(Duration::from_secs(MAX_UFO_TIMER_DURATION)),
             shield_bullet_explosion_mask,
             alien_bullet_explosion,
             player_alien_bullet_explosion,
@@ -332,6 +344,18 @@ impl World {
     #[inline]
     pub fn get_shield_bullet_explosion_mask(&self) -> SpriteMask {
         self.shield_bullet_explosion_mask.clone()
+    }
+
+    /// play ufo effect
+    #[inline]
+    pub fn play_ufo(&mut self) {
+        self.sound.play_ufo();
+    }
+
+    /// pause ufo effect
+    #[inline]
+    pub fn pause_ufo(&self) {
+        self.sound.pause_ufo();
     }
 
     /// play sound track at a particular speed
@@ -403,6 +427,11 @@ impl World {
         self.rng.next_u64() as usize % NUMBER_ALIEN_COLUMNS
     }
 
+    /// generate a random number within a range [start,end)
+    fn get_ufo_duration(&mut self) -> Duration {
+        Duration::from_secs(thread_rng().gen_range(MIN_UFO_TIMER_DURATION, MAX_UFO_TIMER_DURATION))
+    }
+
     /// returns is the player is in process of dying boolean
     #[inline]
     pub fn get_player_died(&self) -> bool {
@@ -445,6 +474,19 @@ impl World {
         self.game_over_timer.reset()
     }
 
+    #[inline]
+    pub fn has_ufo_timer_expired(&self) -> bool {
+        self.ufo_timer.has_expired()
+    }
+
+    #[inline]
+    pub fn reset_ufo_timer(&mut self) {
+        // pick a new duration for our ufo to appear
+        let d = self.get_ufo_duration();
+        self.ufo_timer.set_duration(d);
+        self.ufo_timer.reset();
+    }
+
     /// returns the ground rect for drawing and colision
     #[inline]
     pub fn get_ground() -> Rect {
@@ -455,6 +497,12 @@ impl World {
     #[inline]
     pub fn player_movement() -> i32 {
         PLAYER_MOVEMENT
+    }
+
+    /// returns number of pixels player moves left or right
+    #[inline]
+    pub fn ship_movement() -> u32 {
+        SHIP_MOVEMENT
     }
 
     #[inline]
@@ -1043,7 +1091,8 @@ pub fn initial_world_state(config: &Config) -> World {
     // ship
     let s = sheet_json.frames.get("ship.png").unwrap();
     let ship_sprite = Sprite::new(s.frame.x as u32, s.frame.y as u32, s.frame.w as u32, s.frame.h as u32);
-    let ship = Entity::Ship(Ship::new(Point::new(10, 200), ship_sprite));
+    let bounding_box = Rect::new(Point::new(0,0), Size::new(s.frame.w as u32, s.frame.h as u32));
+    let ship = Entity::Ship(Ship::new(Point::new(10, 200), bounding_box, ship_sprite));
 
     let s = sheet_json.frames.get("splash.png").unwrap();
     let splash_sprite = Sprite::new(s.frame.x as u32, s.frame.y as u32, s.frame.w as u32, s.frame.h as u32);
@@ -1053,6 +1102,7 @@ pub fn initial_world_state(config: &Config) -> World {
         "./assets/sounds/player_shoot_16bit.wav",
         "./assets/sounds/player_explosion_16bit.wav",
         "./assets/sounds/alien_explosion_16bit.wav",
+        "./assets/sounds/ufo.wav",
         vec!["./assets/sounds/invader_march_80bpm.wav",
             "./assets/sounds/invader_march_100bpm.wav",
             "./assets/sounds/invader_march_120bpm.wav",

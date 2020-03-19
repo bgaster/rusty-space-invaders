@@ -358,10 +358,43 @@ pub fn alien_control_system(world: &mut World) {
     }
 }
 
-pub fn ship_control_system(world: &World) {
-    // is the player in the process of dying, then no updates take place
+pub fn ship_control_system(world: &mut World) {
+    // if the player in the process of dying, then no updates take place
     if world.get_player_died() {
         return;
+    }
+
+    let bounds = world.get_bounds();
+    let ufo_timer_expired = world.has_ufo_timer_expired();
+    let mut reset_timer = false;
+    let mut play_effect = false;
+    if let Some(entity) = world.get_mut_entity(world.get_ship()) {
+        if let Entity::Ship(ship) = entity {
+            if ship.is_alive {
+                ship.position.x += World::ship_movement();
+
+                // has ship make it to the right edge of the window?
+                if ship.position.x + ship.bounding_box.size.width >= bounds.max_x() {
+                    ship.is_alive = false;
+                    reset_timer = true;
+                }
+            }
+            else if ufo_timer_expired {
+                ship.is_alive = true;
+                play_effect = true;
+                ship.position = Point::new(UFO_START_X_START_POSITION, UFO_START_Y_START_POSITION);
+            }
+        }
+    }
+
+    // if the UFO got the edge of the screen we need to reset its timer and stop sound effect
+    if reset_timer {
+        world.reset_ufo_timer();
+        world.pause_ufo();
+    }
+    // if UFO entering the screen enable ufo sound effect
+    else if play_effect {
+        world.play_ufo();
     }
 }
 

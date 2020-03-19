@@ -166,7 +166,14 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
         }
     }
 
-    // TODO: handle ship
+    // draw ship
+    if let Some(entity) = world.get_entity(world.get_ship()) {
+        if let Entity::Ship(ship) = entity {
+            if ship.is_alive {
+                ship.sprite.render(ship.position.x, ship.position.y, sheet, &mut frame);
+            }
+        }
+    }
 
     // draw line at bottom of screen
     //fill_rect(Point::new(0, 360), Point::new(Interface::get_width(), 362), [0x28, 0xcf, 0x28, 0xFF], frame.frame );

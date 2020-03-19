@@ -135,7 +135,7 @@ fn main() {
             // handle movement updates for aliens
             alien_control_system(&mut world);
             // handle movment of UFO
-            ship_control_system(&world);
+            ship_control_system(&mut world);
 
             // handle bullet collisons, possible end game state reached on return...
             bullet_collision_system(&mut world);
@@ -152,6 +152,8 @@ fn main() {
                 // start game
                 if control.fire {
                     world.set_current_state(GameState::Playing);
+                    // initalize ufo timer to something random
+                    world.reset_ufo_timer();
                 }
             }
         }
