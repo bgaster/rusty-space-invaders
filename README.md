@@ -22,7 +22,12 @@ It is worth noting that the main goal of the project is to port it to the 32blit
    - [x] README.md
 - [ ] UFOs
    - [x] Design Sprite
-   - [ ] Implement in game
+   - [x] Animation
+   - [x] Random spawning
+   - [ ] Randomise amount of points when killed
+   - [X] Bullet kill
+   - [x] Sound effect
+- Additional player live(s) when passed certain score
 - [x] Gamepad support
 - [ ] Alien invasion
 - [x] Barriers
