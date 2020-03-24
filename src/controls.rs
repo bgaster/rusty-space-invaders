@@ -211,17 +211,35 @@ pub fn bullet_control_system(world: &mut World) {
             // for now we will randomly generate a column, but we might want to follow the actual game a bit closer
             // by simply using a look up table...
             AlienBulletType::Plunger | AlienBulletType::Squiggly => {
-                // loop until we find a column with an alien
-                // NOTE: this only terminates if NOT ALL aliens are dead, make sure this is not the case :-)
-                loop {
-                    let column = world.gen_rand_column();
-                    if let Some(index) = world.lowest_alive_alien_in_column(column) {
-                        if let Some(entity) = world.get_mut_entity(index) {
-                            if let Entity::Alien(alien) = entity {
-                                alien_position = alien.position;
-                                alien_position.x += alien.bounding_box.size.width ;
-                                alien_position.y += alien.bounding_box.size.height ;
-                                break;
+
+                // if ufo is active then have it fire if plunger 
+                let mut ufo_bullet = false;
+                if next == AlienBulletType::Plunger {
+                    if let Some(entity) = world.get_mut_entity(world.get_ship()) {
+                        if let Entity::Ship(ship) = entity {
+                            if ship.is_alive {
+                                ufo_bullet = true;
+                                alien_position = ship.position;
+                                alien_position.x += ship.bounding_box.size.width / 2 ;
+                                alien_position.y += ship.bounding_box.size.height / 2;
+                            }
+                        }
+                    }
+                }
+
+                if !ufo_bullet {
+                    // loop until we find a column with an alien
+                    // NOTE: this only terminates if NOT ALL aliens are dead, make sure this is not the case :-)
+                    loop {
+                        let column = world.gen_rand_column();
+                        if let Some(index) = world.lowest_alive_alien_in_column(column) {
+                            if let Some(entity) = world.get_mut_entity(index) {
+                                if let Entity::Alien(alien) = entity {
+                                    alien_position = alien.position;
+                                    alien_position.x += alien.bounding_box.size.width ;
+                                    alien_position.y += alien.bounding_box.size.height ;
+                                    break;
+                                }
                             }
                         }
                     }

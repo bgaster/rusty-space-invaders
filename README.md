@@ -26,6 +26,7 @@ It is worth noting that the main goal of the project is to port it to the 32blit
    - [x] Random spawning
    - [ ] Randomise amount of points when killed
    - [X] Bullet kill
+   - [X] Fire bullet when on screen
    - [x] Sound effect
 - Additional player live(s) when passed certain score
 - [x] Gamepad support
