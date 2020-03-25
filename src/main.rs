@@ -97,13 +97,14 @@ fn main() {
         if interface.render(&event) {
             // begin rendering, need by some backends
             interface.begin_draw();
-
+            
             // render game if playing or paused
             if  current_state == GameState::Playing || current_state == GameState::Paused {
                 renderer_system(&world, &mut interface);
             }
-            // should we display the gameover screen
+            // should we display the gameover message
             else if current_state == GameState::GameOver {
+                renderer_gameover(&world, &mut interface);
             }
             // or otherwise might be the splash screen
             else if current_state == GameState::Splash {
@@ -160,11 +161,17 @@ fn main() {
 
         // game over? 
         if current_state == GameState::GameOver {
+            // pause any sounds that might be playing
             world.pause_music();
+            world.pause_ufo();
+            
             // is it time to move on?
             if world.has_game_over_timer_expired() {
                 world.set_current_state(GameState::Splash);
                 new_game(&mut world);
+            }
+            else {
+                world.game_over_next();
             }
         }
         //move on to next level?

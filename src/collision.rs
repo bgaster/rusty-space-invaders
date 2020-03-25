@@ -261,7 +261,7 @@ pub fn bullet_collision_system(world: &mut World) {
                     if player.lives_remaining == 0 {
                         world.set_current_state(GameState::GameOver);
                         // trigger game over timer
-                        world.reset_game_over_timer();    
+                        world.reset_game_over_timer();
                     }
 
                     explosions.push(BulletExplosion::new(
@@ -401,6 +401,7 @@ pub fn bullet_collision_system(world: &mut World) {
         if world.get_current_state() == GameState::Playing && world.get_alien_dead() == World::number_aliens() {
             world.set_current_state(GameState::NextLevel);
             world.reset_next_level_timer();
+            world.pause_ufo();
         }
     }
 }

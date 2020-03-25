@@ -9,10 +9,12 @@
 //! Copyright © 2020 Benedict Gaster. All rights reserved.
 //! 
 
+use std::time::{Duration, Instant};
+
 use crate::math::*;
 use crate::sprite_sheet::{SpriteSheet, SheetJSON, Sprite};
 use crate::frame::{Frame};
-
+use crate::timer::*;
 
 #[derive(Debug, Clone)]
 struct Digit {
@@ -113,9 +115,24 @@ impl Digits {
 pub struct GameOver {
     game_over: Vec<Sprite>,
     index: usize,
+    timer: Timer,
 }
 
 impl GameOver {
+    /// time to display each letter
+    const LETTER_DISPLAY_DURATION: Duration = Duration::from_millis(300);
+    const DISPLAY_END_DURATION: Duration = Duration::from_millis(1000);
+
+    const G_INDEX: usize = 0;
+    const A_INDEX: usize = 1;
+    const M_INDEX: usize = 2;
+    const E_INDEX: usize = 3;
+    const O_INDEX: usize = 4;
+    const V_INDEX: usize = 5;
+    const R_INDEX: usize = 6;
+
+    const SPACING: u32 = 50;
+
     /// create a gameover text instance
     pub fn new(sheet_json: &SheetJSON) -> Self {
         
@@ -133,30 +150,76 @@ impl GameOver {
         game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
         let l = sheet_json.frames.get("letter_v.png").unwrap();
         game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
-        let l = sheet_json.frames.get("letter_e.png").unwrap();
-        game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
         let l = sheet_json.frames.get("letter_r.png").unwrap();
         game_over.push(Sprite::new(l.frame.x as u32, l.frame.y as u32, l.frame.w as u32, l.frame.h as u32));
 
         Self {
             game_over,
             index: 0,
+            timer: Timer::new(Self::LETTER_DISPLAY_DURATION),
         }
     }
 
+    /// Start game over message display
     #[inline]
     pub fn start(&mut self) {
         self.index = 0;
+        self.timer.reset();
     }
 
     #[inline]
-    pub fn next_letter(&mut self) {
-        self.index += 1;
+    pub fn next(&mut self) {
+        if self.timer.has_expired() {
+            self.index += 1;
+            if self.index > 7 {
+                self.timer.set_duration(Self::DISPLAY_END_DURATION);
+                self.timer.reset();
+            }
+            else {
+                self.timer.reset();
+            }
+        }
     } 
 
     #[inline]
     pub fn render<'a>(&self, pos: Point, sheet: &SpriteSheet, frame: &mut Frame<'a>) {
-        
+        // 'g'
+        self.game_over[Self::G_INDEX].render(pos.x, pos.y, sheet, frame);
+        // 'a'
+        if self.index > 0 {
+            self.game_over[Self::A_INDEX].render(pos.x + Self::SPACING, pos.y, sheet, frame);
+        }
+        // 'm'
+        if self.index > 1 {
+            self.game_over[Self::M_INDEX].render(pos.x + Self::SPACING*2, pos.y, sheet, frame);
+        }
+        // 'e'
+        if self.index > 2 {
+            self.game_over[Self::E_INDEX].render(pos.x + Self::SPACING*3, pos.y, sheet, frame);
+        }
+        // ' '
+        // 'o'
+        if self.index > 4 {
+            self.game_over[Self::O_INDEX].render(pos.x + Self::SPACING*5, pos.y, sheet, frame);
+        }
+        // 'v'
+        if self.index > 5 {
+            self.game_over[Self::V_INDEX].render(pos.x + Self::SPACING*6, pos.y, sheet, frame);
+        }
+        // 'e'
+        if self.index > 6 {
+            self.game_over[Self::E_INDEX].render(pos.x + Self::SPACING*7, pos.y, sheet, frame);
+        }
+        // r'
+        if self.index > 7 {
+            self.game_over[Self::R_INDEX].render(pos.x + Self::SPACING*8, pos.y, sheet, frame);
+        }
+    }
+
+    /// returns true if displaying game over is completed, otherwise false
+    #[inline]
+    pub fn end(&self) -> bool {
+        self.index > 7 && self.timer.has_expired()
     }
 }
 

@@ -77,6 +77,9 @@ const BOUNDING_BOX_PADDING: i32 = 10;
 pub const PLAYER_LIVES_TOP_LEFT_X_START_POSITION: u32 = 240;
 pub const PLAYER_LIVES_TOP_LEFT_Y_START_POSITION: u32 = 410;
 
+pub const GAMEOVER_X_POSITION: u32 = 750;
+pub const GAMEOVER_Y_POSITION: u32 = 55;
+
 lazy_static! {
     static ref SCREEN_LINE: Rect = Rect::new(Point::new(0,400), Size::new(Interface::get_width(), 2));
 }
@@ -456,12 +459,19 @@ impl World {
 
     #[inline]
     pub fn has_game_over_timer_expired(&self) -> bool {
-        self.game_over_timer.has_expired()
+        //self.game_over_timer.has_expired()
+        self.game_over.end()
+    }
+    
+    #[inline]
+    pub fn game_over_next(&mut self) {
+        self.game_over.next();
     }
 
     #[inline]
     pub fn reset_game_over_timer(&mut self) {
-        self.game_over_timer.reset()
+        //self.game_over_timer.reset();
+        self.game_over.start();  
     }
 
     #[inline]
@@ -837,6 +847,12 @@ impl World {
     pub fn inc_next_bullet_type(&mut self) {
         self.next_alien_bullet_type = self.next_alien_bullet_type.next();
     }
+
+    #[inline]
+    pub fn get_game_over(&self) -> &GameOver {
+        &self.game_over
+    }
+    
 
     #[inline]
     pub fn has_alien_bullet_timer_expired(&self) -> bool {
@@ -1278,6 +1294,19 @@ pub fn reset_aliens(round: u32, world: &mut World) {
 /// # Arguments
 /// 
 /// * `world` World to be updated for next level play
+fn reset_ship(world: &mut World) {
+    if let Some(entity) = world.get_mut_entity(world.get_ship()) {
+        if let Entity::Ship(ship) = entity {
+            ship.is_alive = false;
+        }
+    }
+}
+
+/// Setup for next level, restoring/resetting/configuring barriers, player, and aliens
+/// 
+/// # Arguments
+/// 
+/// * `world` World to be updated for next level play
 pub fn next_level(world: &mut World) {
     
     // increment current level
@@ -1303,4 +1332,5 @@ pub fn new_game(world: &mut World) {
     reset_barriers(world);
     reset_player(true, world);
     reset_aliens(world.get_current_level(), world);
+    reset_ship(world);
 }

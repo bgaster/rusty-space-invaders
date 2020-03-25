@@ -20,7 +20,6 @@ use crate::text::*;
 /// draw the splash screen
 pub fn renderer_splash(world: &World, interface: &mut Interface) {
     // we don't really need this as it is a full screen splash, but anyway
-    interface.clear_framebuffer([0x00,0x00,0x00,0xFF]);
 
     let mut frame = interface.framebuffer();
 
@@ -34,6 +33,14 @@ pub fn renderer_splash(world: &World, interface: &mut Interface) {
 
 /// draw the gameover screen
 pub fn renderer_gameover(world: &World, interface: &mut Interface) {
+
+    let mut frame = interface.framebuffer();
+    // get ref to sprite sheet used to render sprites and animations
+    let sheet = world.get_sprite_sheet();
+
+    world.get_game_over().render(Point::new(GAMEOVER_X_POSITION, GAMEOVER_Y_POSITION), sheet, &mut frame);
+
+    interface.draw_call();
 }
 
 /// render the game frame
@@ -77,7 +84,7 @@ pub fn renderer_system(world: &World, interface: &mut Interface) {
         
             // draw credits
             world.get_score_text().render_credit(
-                Point::new(1100,PLAYER_LIVES_TOP_LEFT_Y_START_POSITION), 
+                Point::new(1100, PLAYER_LIVES_TOP_LEFT_Y_START_POSITION), 
                 sheet, 
                 &mut frame);
             // no real credits needed to play, so we simply draw 00
