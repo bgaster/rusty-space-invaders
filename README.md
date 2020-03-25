@@ -37,9 +37,9 @@ It is worth noting that the main goal of the project is to port it to the 32blit
    - [x] Colisions
       - [x] Full bounding box
       - [x] Partial damage
-- [ ] End of game
+- [x] End of game
    - [x] Functionality to reset game
-   - [ ] Screen showing end of game text
+   - [x] Screen showing end of game text
    - [x] Timer to provide delay between end of game and new game/splash screen
 - [x] Levels
    - [x] Next level functionality
