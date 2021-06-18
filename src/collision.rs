@@ -75,9 +75,9 @@ fn collides_with_barrier(
                 bpos + bullet_width as usize
             };
 
+            let mask = &mut i.2;
             if is_alien {
                 // handle alien bullet, which will becoming from top down
-                let mask = &mut i.2;
                 for y in 0..barrier_height as usize {
                     for x in (bullet_pos_x as usize) >> 2..width as usize {
                         if mask[y][x] == 1 {
@@ -89,7 +89,6 @@ fn collides_with_barrier(
             }
             else {
                 // handle player bullet, which will becoming from bottom up
-                let mask = &mut i.2;
                 let bpos_y = (i.1.origin.y + i.1.size.height) - bounding_box.origin.y;
                 // iterate from bottom of barrier when the bullet hit, moving up until we find a set pixel to distory
                 for y in (0..=barrier_height as usize).rev() {
@@ -266,7 +265,7 @@ pub fn bullet_collision_system(world: &mut World) {
 
                     explosions.push(BulletExplosion::new(
                         pos, 
-                        world.get_player_explosion_sprite().clone(), 
+                        world.get_player_explosion_sprite(),
                         world.get_bullet_explosion_time() as i32));
 
                     // finally reset the player killed timer to delay the gameplay for a moment

@@ -173,11 +173,10 @@ impl GameOver {
             self.index += 1;
             if self.index > 7 {
                 self.timer.set_duration(Self::DISPLAY_END_DURATION);
-                self.timer.reset();
             }
             else {
-                self.timer.reset();
             }
+            self.timer.reset();
         }
     } 
 

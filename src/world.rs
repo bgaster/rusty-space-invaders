@@ -432,7 +432,7 @@ impl World {
 
     /// generate a random number within a range [start,end)
     fn get_ufo_duration(&mut self) -> Duration {
-        Duration::from_secs(thread_rng().gen_range(MIN_UFO_TIMER_DURATION, MAX_UFO_TIMER_DURATION))
+        Duration::from_secs(thread_rng().gen_range(MIN_UFO_TIMER_DURATION..=MAX_UFO_TIMER_DURATION))
     }
 
     /// returns is the player is in process of dying boolean
@@ -737,7 +737,7 @@ impl World {
 
     /// iterator over live explosions
     #[inline]
-    pub fn get_explosions<'a>(&'a self) -> impl Iterator<Item = EntityIndex> + 'a {
+    pub fn get_explosions(&'_ self) -> impl Iterator<Item = EntityIndex> + '_ {
         self.explosions.iter().cloned()
     }
 
@@ -789,7 +789,7 @@ impl World {
     }
 
     #[inline]
-    pub fn get_barriers<'a>(&'a self) -> impl Iterator<Item = EntityIndex> + 'a {
+    pub fn get_barriers(&'_ self) -> impl Iterator<Item = EntityIndex> + '_ {
         self.barriers.iter().cloned()
     }
 
@@ -804,7 +804,7 @@ impl World {
     }
 
     #[inline]
-    pub fn get_aliens<'a>(&'a self) -> impl Iterator<Item = EntityIndex> + 'a {
+    pub fn get_aliens(&'_ self) -> impl Iterator<Item = EntityIndex> + '_ {
         self.aliens.iter().cloned()
     }
 
