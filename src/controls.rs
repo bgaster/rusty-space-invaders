@@ -425,5 +425,5 @@ pub fn is_game_over(world: &World) -> bool {
         }
     }
 
-    return false;
+    false
 }

@@ -6,7 +6,7 @@ An emulation of the original space invaders. The behaviour somewhat follows that
 
 Another useful place for details of how the game works can be found [here](https://www.classicgaming.cc/classics/space-invaders/play-guide).
          
-It is by no means a direct reproduction, in particular, the timing is similar, but I've not made any real effort to match it percisely. It is not implemented as per the original game, using the 2 screen interrupts and so on, insead it uses a simply timer based system for the main alien swarm and other elements, e.g. bullets, just run at their own rate, both for animations, and for movement. It does not use an ECS, which if I was doing anything more complicated it would. Next project I plan to, but this was just a small few days project, while I sat around complaining about a horrid tooth ache, which has now been fixed with a root canal :-)
+It is by no means a direct reproduction, in particular, the timing is similar, but I've not made any real effort to match it precisely. It is not implemented as per the original game, using the 2 screen interrupts and so on, instead it uses a simply timer based system for the main alien swarm and other elements, e.g. bullets, just run at their own rate, both for animations, and for movement. It does not use an ECS, which if I was doing anything more complicated it would. Next project I plan to, but this was just a small few days project, while I sat around complaining about a horrid tooth ache, which has now been fixed with a root canal :-)
 
 It is worth noting that the main goal of the project is to port it to the 32blit, a small 32-bit MCU based retro games console, which I backed on Kickstarter and should be arriving soon. More details of this here:
  
@@ -15,9 +15,9 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 ## TODOs
 
 - [x] Hi score
-   - [x] Configuration, so highscore (and version) are presistent across execution instances of game
+   - [x] Configuration, so highscore (and version) are persistent across execution instances of game
 - [x] Splash Screen
-- [ ] Domumentation
+- [ ] Documentation
    - [ ] Document code
    - [x] README.md
 - [ ] UFOs
@@ -33,8 +33,8 @@ It is worth noting that the main goal of the project is to port it to the 32blit
 - [ ] Alien invasion
 - [x] Barriers
    - [x] Sprites
-   - [x] Basic Renderering
-   - [x] Colisions
+   - [x] Basic Rendering
+   - [x] Collisions
       - [x] Full bounding box
       - [x] Partial damage
 - [x] End of game
@@ -81,9 +81,9 @@ cargo run --release
 ## Assets
 
 The assets are all sprite based, of varying sizes, although all pretty small. They drawn using
-the super cool Rust pixel editor [Rx](https://github.com/cloudhead/rx), and then, in some cases, twiked in Photoshop, and finally added to a single sprite sheet with [TexturePacker](https://www.codeandweb.com/texturepacker).
+the super cool Rust pixel editor [Rx](https://github.com/cloudhead/rx), and then, in some cases, tweaked in Photoshop, and finally added to a single sprite sheet with [TexturePacker](https://www.codeandweb.com/texturepacker).
 
-There is a simple sprite sheet and animiation engine, which provides just want was needed for this game. The main reason for not using an existing Rust game engine was, as noted above, that I want to port it to the 32Blit, which would be a lot more work if I used a complicated cross platform engine. I do use a few crates when I could assume that there will be similar ones on the 32blit, even though there they will be in C++ (ahh) and I'll have to implement abstractions on top. In particular, eculid, and pixels for math and a framebuffer, respectively. Along with wint for windowing stuff. For other desktop games I plan to use [rgfx](https://github.com/cloudhead/rgx), which looks great.
+There is a simple sprite sheet and animation engine, which provides just want was needed for this game. The main reason for not using an existing Rust game engine was, as noted above, that I want to port it to the 32Blit, which would be a lot more work if I used a complicated cross platform engine. I do use a few crates when I could assume that there will be similar ones on the 32blit, even though there they will be in C++ (ahh) and I'll have to implement abstractions on top. In particular, eculid, and pixels for math and a framebuffer, respectively. Along with wint for windowing stuff. For other desktop games I plan to use [rgfx](https://github.com/cloudhead/rgx), which looks great.
 
 ## Credits
 

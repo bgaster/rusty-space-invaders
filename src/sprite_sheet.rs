@@ -59,8 +59,8 @@ pub struct SheetJSON {
 impl SheetJSON {
     pub fn new<P>(jsonfile: P) -> Self
         where P: AsRef<Path> {
-            let mut json = String::new();
-            let mut file = File::open(jsonfile).expect("Unable open sprite sheet JSON file");
+            let json = String::new();
+            let file = File::open(jsonfile).expect("Unable open sprite sheet JSON file");
             serde_json::from_reader(file).expect("Invalid sprite sheet JSON file")
     }
 }
@@ -104,7 +104,7 @@ pub fn print_sprite_mask(mask: &SpriteMask) {
         for col in row {
             print!("{}", col);
         }  
-        println!("");
+        println!();
     }
 }
 
@@ -229,7 +229,7 @@ impl SpriteSheet {
         where P: AsRef<Path> {
 
             let img : DynamicImage = image::open(image_file).unwrap();
-            let tex = img.to_rgba();
+            let tex = img.to_rgba8();
             let dim = tex.dimensions();
             SpriteSheet {
                 texture: tex,
